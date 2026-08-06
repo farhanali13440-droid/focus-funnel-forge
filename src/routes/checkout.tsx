@@ -1,0 +1,267 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, type FormEvent } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  Lock,
+  ShieldCheck,
+  Video,
+} from "lucide-react";
+import doctorImg from "@/assets/dr-faheem.jpg";
+import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
+
+const TITLE = "Checkout – ADHD Clarity Session (PKR 999) | Dr. Faheem Khan";
+const DESCRIPTION =
+  "Confirm your 60-minute ADHD Clarity Session with Dr. Mohammad Faheem Khan for PKR 999. Choose online or in-clinic, pick your time, and book securely.";
+
+export const Route = createFileRoute("/checkout")({
+  head: () => ({
+    meta: [
+      { title: TITLE },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "/checkout" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "/checkout" }],
+  }),
+  component: CheckoutPage,
+});
+
+const includes = [
+  "60-minute consultant session",
+  "Detailed psychiatric assessment",
+  "ADHD screening & functional review",
+  "Initial management plan",
+  "Written summary & next steps",
+];
+
+const field =
+  "w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/30";
+const labelCls = "mb-1.5 block text-sm font-semibold";
+
+function CheckoutPage() {
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    setSubmitting(true);
+    const booking = Object.fromEntries(data.entries());
+    try {
+      sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
+    } catch {
+      /* storage unavailable */
+    }
+    navigate({ to: "/thank-you" });
+  };
+
+  return (
+    <main className="min-h-screen surface-soft pb-16">
+      <div className="mx-auto w-full max-w-6xl px-5 py-8">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft strokeWidth={1.7} className="size-4" /> Back to details
+        </Link>
+
+        {/* Progress */}
+        <div className="mt-6 flex items-center gap-3">
+          {["Your details", "Booking", "Confirmed"].map((s, i) => (
+            <div key={s} className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div
+                  className={`h-1.5 rounded-full ${i <= 1 ? "bg-primary" : "bg-border"}`}
+                />
+                <p
+                  className={`mt-2 truncate text-xs font-semibold ${
+                    i <= 1 ? "text-primary-deep" : "text-muted-foreground"
+                  }`}
+                >
+                  {s}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+          Step 2 of 3
+        </p>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
+          {/* Form */}
+          <form
+            onSubmit={onSubmit}
+            className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8"
+          >
+            <h1 className="text-2xl font-semibold sm:text-3xl">Book your ADHD Clarity Session</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Takes about 90 seconds. We&apos;ll confirm your slot on WhatsApp.
+            </p>
+
+            <div className="mt-7 grid gap-5 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="fullName">Full name</label>
+                <input id="fullName" name="fullName" required maxLength={100} className={field} placeholder="Your full name" />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="age">Age</label>
+                <input id="age" name="age" type="number" min={3} max={100} required className={field} placeholder="e.g. 28" />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="city">City</label>
+                <input id="city" name="city" required maxLength={60} className={field} placeholder="e.g. Peshawar" />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="phone">Phone</label>
+                <input id="phone" name="phone" type="tel" required maxLength={20} className={field} placeholder="03XX XXXXXXX" />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="whatsapp">WhatsApp number</label>
+                <input id="whatsapp" name="whatsapp" type="tel" required maxLength={20} className={field} placeholder="03XX XXXXXXX" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="email">Email</label>
+                <input id="email" name="email" type="email" required maxLength={255} className={field} placeholder="you@email.com" />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="patientType">Patient type</label>
+                <select id="patientType" name="patientType" required defaultValue="Adult" className={field}>
+                  <option>Adult</option>
+                  <option>Child</option>
+                  <option>Student</option>
+                  <option>Professional</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="mode">Preferred session</label>
+                <select id="mode" name="mode" required defaultValue="Online" className={field}>
+                  <option>Online</option>
+                  <option>Clinic</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="date">Preferred date</label>
+                <input id="date" name="date" type="date" required className={field} />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="time">Preferred time</label>
+                <input id="time" name="time" type="time" required className={field} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="concern">Primary concern</label>
+                <textarea
+                  id="concern"
+                  name="concern"
+                  rows={4}
+                  maxLength={1000}
+                  className={field}
+                  placeholder="In your own words — what's been hardest lately?"
+                />
+              </div>
+            </div>
+
+            <div className="mt-7 rounded-2xl border border-border bg-primary-soft p-5">
+              <div className="flex items-center justify-between text-sm">
+                <span>ADHD Clarity Session (60 min)</span>
+                <span className="font-semibold">PKR 999</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
+                <span>Booking fee</span>
+                <span>PKR 0</span>
+              </div>
+              <div className="my-4 h-px bg-border" />
+              <div className="flex items-center justify-between text-lg font-semibold">
+                <span>Total due today</span>
+                <span>PKR 999</span>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="mt-6 w-full rounded-2xl bg-cta px-7 py-4 text-base font-semibold text-cta-foreground shadow-[var(--shadow-cta)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 disabled:opacity-70"
+            >
+              {submitting ? "Confirming…" : "Complete Booking"}
+            </button>
+
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <Lock strokeWidth={1.7} className="size-4" /> Secure &amp; encrypted
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <CreditCard strokeWidth={1.7} className="size-4" /> Card, bank &amp; wallet
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <ShieldCheck strokeWidth={1.7} className="size-4" /> Confidential medical record
+              </span>
+            </div>
+          </form>
+
+          {/* Summary */}
+          <aside className="h-max rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] lg:sticky lg:top-6">
+            <div className="flex items-center gap-4">
+              <img
+                src={doctorImg}
+                width={1024}
+                height={1280}
+                loading="lazy"
+                alt="Dr. Mohammad Faheem Khan"
+                className="size-16 shrink-0 rounded-full object-cover object-top"
+              />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">Dr. Mohammad Faheem Khan</p>
+                <p className="text-xs text-muted-foreground">Consultant Psychiatrist · FRCPsych</p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Eyebrow>Your order</Eyebrow>
+              <h2 className="mt-3 text-xl font-semibold">ADHD Clarity Session</h2>
+              <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                <p className="flex items-center gap-2">
+                  <Clock strokeWidth={1.7} className="size-4 text-primary" /> 60 minutes
+                </p>
+                <p className="flex items-center gap-2">
+                  <Video strokeWidth={1.7} className="size-4 text-primary" /> Online or in-clinic
+                </p>
+              </div>
+              <ul className="mt-5 space-y-2.5">
+                {includes.map((i) => (
+                  <li key={i} className="flex gap-2.5 text-sm">
+                    <CheckCircle2 strokeWidth={1.7} className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>{i}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 rounded-2xl bg-primary-soft p-5 text-center">
+                <p className="text-xs font-semibold tracking-[0.14em] text-primary-deep uppercase">
+                  Introductory price
+                </p>
+                <p className="mt-1 text-3xl font-semibold">PKR 999</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Deducted from your Comprehensive ADHD Assessment if booked within 30 days.
+                </p>
+              </div>
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                Reschedule free of charge up to 24 hours before your appointment.
+              </p>
+              <div className="mt-5">
+                <CtaButton href={WHATSAPP_URL} variant="outline" className="w-full py-3 text-sm">
+                  Need help? WhatsApp us
+                </CtaButton>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+  );
+}
