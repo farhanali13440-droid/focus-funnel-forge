@@ -174,6 +174,53 @@ export function Reveal({
   );
 }
 
+/** Rolling urgency countdown — resets on a fixed 48h cycle. */
+export function Countdown({ label }: { label?: string }) {
+  const [left, setLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    const cycle = 48 * 60 * 60 * 1000;
+    const tick = () => setLeft(cycle - (Date.now() % cycle));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const t = left ?? 0;
+  const parts = [
+    { v: Math.floor(t / 86400000), l: "Days" },
+    { v: Math.floor(t / 3600000) % 24, l: "Hours" },
+    { v: Math.floor(t / 60000) % 60, l: "Minutes" },
+    { v: Math.floor(t / 1000) % 60, l: "Seconds" },
+  ];
+
+  return (
+    <div className="text-center">
+      {label ? (
+        <p className="text-xs font-semibold tracking-[0.14em] text-primary-deep uppercase">
+          {label}
+        </p>
+      ) : null}
+      <div className="mt-3 flex items-center justify-center gap-2 sm:gap-3">
+        {parts.map((p) => (
+          <div
+            key={p.l}
+            className="min-w-[4.25rem] rounded-2xl border border-border bg-card px-3 py-3 shadow-[var(--shadow-soft)]"
+          >
+            <p className="text-2xl font-semibold tabular-nums sm:text-3xl">
+              {left === null ? "--" : String(p.v).padStart(2, "0")}
+            </p>
+            <p className="mt-0.5 text-[0.65rem] tracking-[0.12em] text-muted-foreground uppercase">
+              {p.l}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 export function WhatsAppFloat() {
   return (
     <a
