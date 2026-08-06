@@ -13,7 +13,8 @@ import {
   Users,
   Video,
 } from "lucide-react";
-import doctorImg from "@/assets/dr-faheem.jpg";
+import doctorAsset from "@/assets/dr-faheem-khan.png.asset.json";
+const doctorImg = doctorAsset.url;
 import {
   CtaButton,
   Eyebrow,
