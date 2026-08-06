@@ -363,7 +363,7 @@ function SalesPage() {
               <div className="card-premium flex h-full flex-col p-7">
                 <div className="flex items-center gap-1 text-primary">
                   {Array.from({ length: 5 }).map((_, s) => (
-                    <Star key={s} strokeWidth={1.6} className="size-4" />
+                    <Star key={s} strokeWidth={0} className="size-4 fill-current" />
                   ))}
                 </div>
                 <p className="mt-4 flex-1 text-sm leading-relaxed">&ldquo;{r.text}&rdquo;</p>
@@ -879,7 +879,7 @@ function SalesPage() {
                   <p className="mt-4 flex-1 text-sm leading-relaxed">{t.text}</p>
                   <div className="mt-5 flex items-center gap-1 text-primary">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} strokeWidth={1.6} className="size-4" />
+                      <Star key={i} strokeWidth={0} className="size-4 fill-current" />
                     ))}
                   </div>
                   <p className="mt-3 text-sm font-semibold">{t.name}</p>
