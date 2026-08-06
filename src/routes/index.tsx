@@ -765,7 +765,7 @@ function SalesPage() {
 
       {/* Myths */}
       <Section soft>
-        <SectionHeading eyebrow="Myths &amp; reality" title="What ADHD Actually Is — and Isn't" />
+        <SectionHeading eyebrow="Myths & reality" title="What ADHD Actually Is — and Isn't" />
         <div className="grid gap-5 lg:grid-cols-3">
           {myths.map((m, i) => (
             <Reveal key={m.myth} delay={i * 90}>
