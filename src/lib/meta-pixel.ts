@@ -54,9 +54,9 @@ export function trackPurchase({ value, transactionId, currency = "PKR" }: Purcha
     if (localStorage.getItem(key)) return; // already counted
     localStorage.setItem(key, new Date().toISOString());
   } catch {
-    /* storage unavailable — still fire once for this page load */
-    if ((window as Record<string, unknown>)[key]) return;
-    (window as Record<string, unknown>)[key] = true;
+    /* storage unavailable — fall back to in-memory dedupe for this page load */
+    if (memoryDedupe.has(key)) return;
+    memoryDedupe.add(key);
   }
 
   window.fbq("track", "Purchase", {
