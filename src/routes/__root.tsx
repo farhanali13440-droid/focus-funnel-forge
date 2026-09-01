@@ -101,6 +101,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
+    scripts: [{ children: META_PIXEL_SNIPPET }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -124,6 +125,13 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  // Fire a PageView on client-side route changes (the base snippet only fires
+  // the initial page load).
+  useEffect(() => {
+    return router.subscribe("onResolved", () => trackPageView());
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
