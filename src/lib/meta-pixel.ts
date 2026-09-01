@@ -26,6 +26,8 @@ export function trackPageView() {
   }
 }
 
+const memoryDedupe = new Set<string>();
+
 type PurchaseArgs = {
   /** Amount actually charged, in major currency units (e.g. 999). */
   value: number;
