@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Gate /thank-you: reachable only after successful submission (client-side guard + empty render until verified)
-- [ ] Audit codebase for duplicate Purchase/fbq triggers — confirm exactly one Purchase implementation
-- [ ] Report to user: duplicate Purchase comes from Meta Event Setup Tool rule (Meta-side), must be removed in Events Manager; code keeps single manual Purchase
-- [ ] Verify full flow in browser: direct visit redirects, one Purchase per submission, none on refresh
+- [x] Gate /thank-you: reachable only after successful submission (beforeLoad + client guard, empty render until verified)
+- [x] Audit codebase for duplicate Purchase/fbq triggers — exactly one Purchase implementation (src/lib/meta-pixel.ts → thank-you.tsx)
+- [x] Verify full flow in browser: direct visit redirects to /checkout, Purchase fires once per submission, refresh deduped via localStorage transaction ID
+- [x] Report: duplicate Purchase is Meta-side Event Setup Tool rule — user must delete it in Events Manager
