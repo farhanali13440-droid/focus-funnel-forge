@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Brain,
@@ -32,7 +32,30 @@ const TITLE = "You're Booked – ADHD Clarity Session | Dr. Faheem Khan";
 const DESCRIPTION =
   "Your ADHD Clarity Session with Dr. Mohammad Faheem Khan is confirmed. Here are your session details, next steps and support options.";
 
+/**
+ * Gate: /thank-you is ONLY reachable after a successful checkout submission.
+ * The checkout stores `adhd-booking` + `adhd-transaction-id` in sessionStorage
+ * only after the mandatory screenshot upload succeeds and the form submits
+ * successfully. Anyone hitting /thank-you directly, via a link, or after a
+ * failed submission has neither marker and is redirected to /checkout.
+ * (Runs client-side only; SSR has no sessionStorage and renders nothing
+ * sensitive — the client guard immediately redirects on hydration nav.)
+ */
+function requireSuccessfulSubmission() {
+  if (typeof window === "undefined") return;
+  let hasSubmission = false;
+  try {
+    hasSubmission = Boolean(
+      sessionStorage.getItem("adhd-booking") && sessionStorage.getItem("adhd-transaction-id"),
+    );
+  } catch {
+    hasSubmission = false;
+  }
+  if (!hasSubmission) throw redirect({ to: "/checkout" });
+}
+
 export const Route = createFileRoute("/thank-you")({
+  beforeLoad: requireSuccessfulSubmission,
   head: () => ({
     meta: [
       { title: TITLE },
@@ -68,7 +91,10 @@ const upsells = [
 ];
 
 function ThankYouPage() {
+  const navigate = useNavigate();
+  // null = verifying, false = no successful submission (redirecting away)
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [verified, setVerified] = useState(false);
 
   useEffect(() => {
     let parsed: Booking | null = null;
@@ -80,20 +106,30 @@ function ThankYouPage() {
     } catch {
       /* ignore */
     }
-    if (parsed) setBooking(parsed);
 
-    // Fire Purchase ONLY when this page was reached via a successful form
-    // submission (booking + transaction ID present). Direct visits to
-    // /thank-you without a completed checkout never track a purchase, and
-    // trackPurchase dedupes on the transaction ID so refreshes don't re-fire.
-    if (parsed && transactionId) {
-      trackPurchase({
-        value: SESSION_PRICE,
-        currency: "PKR",
-        transactionId,
-      });
+    // Gate: this page is ONLY for successful submissions. Direct visits,
+    // typed URLs, or arrivals after a failed submission have no markers —
+    // send them back to the checkout form. No Purchase is ever fired here.
+    if (!parsed || !transactionId) {
+      void navigate({ to: "/checkout", replace: true });
+      return;
     }
-  }, []);
+
+    setBooking(parsed);
+    setVerified(true);
+
+    // Fire Purchase exactly once per successful submission. trackPurchase
+    // dedupes on the transaction ID (localStorage) so refreshes don't re-fire.
+    trackPurchase({
+      value: SESSION_PRICE,
+      currency: "PKR",
+      transactionId,
+    });
+  }, [navigate]);
+
+  // Render nothing until the successful-submission markers are verified —
+  // the confirmation UI must never be visible without a real submission.
+  if (!verified) return null;
 
   const summary = [
     { label: "Name", value: booking?.["fullName"] || "—" },
