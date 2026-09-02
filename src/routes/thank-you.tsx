@@ -67,11 +67,27 @@ function ThankYouPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
+    let parsed: Booking | null = null;
+    let transactionId: string | null = null;
     try {
       const raw = sessionStorage.getItem("adhd-booking");
-      if (raw) setBooking(JSON.parse(raw) as Booking);
+      if (raw) parsed = JSON.parse(raw) as Booking;
+      transactionId = sessionStorage.getItem("adhd-transaction-id");
     } catch {
       /* ignore */
+    }
+    if (parsed) setBooking(parsed);
+
+    // Fire Purchase ONLY when this page was reached via a successful form
+    // submission (booking + transaction ID present). Direct visits to
+    // /thank-you without a completed checkout never track a purchase, and
+    // trackPurchase dedupes on the transaction ID so refreshes don't re-fire.
+    if (parsed && transactionId) {
+      trackPurchase({
+        value: SESSION_PRICE,
+        currency: "PKR",
+        transactionId,
+      });
     }
   }, []);
 

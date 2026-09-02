@@ -56,8 +56,12 @@ function CheckoutPage() {
     const data = new FormData(e.currentTarget);
     setSubmitting(true);
     const booking = Object.fromEntries(data.entries());
+    // Unique transaction ID for this successful submission — used to dedupe
+    // the Meta Pixel Purchase event on the Thank You page.
+    const transactionId = crypto.randomUUID();
     try {
       sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
+      sessionStorage.setItem("adhd-transaction-id", transactionId);
     } catch {
       /* storage unavailable */
     }
