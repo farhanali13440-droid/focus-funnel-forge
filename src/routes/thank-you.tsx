@@ -135,11 +135,12 @@ function ThankYouPage() {
           <span className="mx-auto grid size-16 place-items-center rounded-full bg-primary-soft text-primary ring-1 ring-border">
             <CheckCircle2 strokeWidth={1.6} className="size-8" />
           </span>
-          <h1 className="mt-6 text-4xl font-semibold sm:text-5xl">You&apos;re Booked!</h1>
+          <h1 className="mt-6 text-4xl font-semibold sm:text-5xl">Payment Submitted Successfully</h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Thank you for booking your ADHD Clarity Session. Our team will confirm your slot on
-            WhatsApp shortly.
+            Thank you. Your payment proof has been received successfully. Our team will review your
+            submission and contact you on WhatsApp with the next steps.
           </p>
+
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <CtaButton href={WHATSAPP_URL} variant="primary">
               <MessageCircle strokeWidth={1.7} className="size-5" /> Message us on WhatsApp
