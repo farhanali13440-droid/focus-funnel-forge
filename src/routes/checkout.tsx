@@ -237,7 +237,44 @@ function CheckoutPage() {
                   placeholder="In your own words — what's been hardest lately?"
                 />
               </div>
+
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="receipt">
+                  Upload Payment Screenshot <span className="text-cta">*</span>
+                </label>
+                <label
+                  htmlFor="receipt"
+                  className={`flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed px-4 py-4 transition-colors ${
+                    fileError ? "border-destructive bg-destructive/5" : "border-border bg-primary-soft/50 hover:border-primary"
+                  }`}
+                >
+                  <ImageUp strokeWidth={1.7} className="size-5 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {receipt ? receipt.name : "Choose your payment screenshot (JPG, PNG or WEBP)"}
+                  </span>
+                  {receipt && (
+                    <CheckCircle2 strokeWidth={1.7} className="size-5 shrink-0 text-primary" />
+                  )}
+                </label>
+                <input
+                  id="receipt"
+                  name="receipt"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                  className="sr-only"
+                  onChange={onFileChange}
+                />
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Required — please attach proof of your PKR 999 payment. Max 8 MB.
+                </p>
+                {fileError && (
+                  <p role="alert" className="mt-2 text-sm font-medium text-destructive">
+                    {fileError}
+                  </p>
+                )}
+              </div>
             </div>
+
 
             <div className="mt-7 rounded-2xl border border-border bg-primary-soft p-5">
               <div className="flex items-center justify-between text-sm">
