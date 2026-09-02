@@ -47,26 +47,78 @@ const field =
   "w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/30";
 const labelCls = "mb-1.5 block text-sm font-semibold";
 
+const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MAX_FILE_BYTES = 8 * 1024 * 1024;
+
 function CheckoutPage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSubmitError(null);
+    const file = e.target.files?.[0] ?? null;
+    if (!file) {
+      setReceipt(null);
+      setFileError("Payment screenshot is required.");
+      return;
+    }
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setReceipt(null);
+      setFileError("Please upload a JPG, JPEG, PNG or WEBP image.");
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      setReceipt(null);
+      setFileError("File is too large — maximum size is 8 MB.");
+      return;
+    }
+    setFileError(null);
+    setReceipt(file);
+  };
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitError(null);
+
+    // Screenshot is mandatory — block submission entirely without it.
+    if (!receipt) {
+      setFileError("Payment screenshot is required.");
+      document.getElementById("receipt")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     const data = new FormData(e.currentTarget);
     setSubmitting(true);
-    const booking = Object.fromEntries(data.entries());
-    // Unique transaction ID for this successful submission — used to dedupe
-    // the Meta Pixel Purchase event on the Thank You page.
-    const transactionId = crypto.randomUUID();
     try {
+      // Step 1 — upload the screenshot. Must succeed before anything else.
+      const uploadedName = await uploadReceipt(receipt);
+
+      // Step 2 — submit the booking. Only a successful submission redirects.
+      const booking = {
+        ...Object.fromEntries(data.entries()),
+        receiptName: uploadedName,
+      } as Record<string, string>;
+      delete booking["receipt"];
+
+      // Unique transaction ID for this successful submission — used to dedupe
+      // the Meta Pixel Purchase event on the Thank You page.
+      const transactionId = crypto.randomUUID();
       sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
       sessionStorage.setItem("adhd-transaction-id", transactionId);
-    } catch {
-      /* storage unavailable */
+
+      // Step 3 — success: go to the Thank You page (where Purchase fires).
+      navigate({ to: "/thank-you" });
+    } catch (err) {
+      setSubmitting(false);
+      setSubmitError(
+        err instanceof Error ? err.message : "Submission failed. Please try again.",
+      );
     }
-    navigate({ to: "/thank-you" });
   };
+
 
   return (
     <main className="min-h-screen surface-soft pb-16">
