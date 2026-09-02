@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Brain,
@@ -32,7 +32,29 @@ const TITLE = "You're Booked – ADHD Clarity Session | Dr. Faheem Khan";
 const DESCRIPTION =
   "Your ADHD Clarity Session with Dr. Mohammad Faheem Khan is confirmed. Here are your session details, next steps and support options.";
 
+/**
+ * Gate: /thank-you is ONLY reachable after a successful checkout submission.
+ * The checkout stores `adhd-booking` + `adhd-transaction-id` in sessionStorage
+ * only after the mandatory screenshot upload succeeds and the form submits
+ * successfully. Anyone hitting /thank-you directly, via a link, or after a
+ * failed submission has neither marker and is redirected to /checkout.
+ * (Runs client-side only; SSR has no sessionStorage and renders nothing
+ * sensitive — the client guard immediately redirects on hydration nav.)
+ */
+function requireSuccessfulSubmission() {
+  if (typeof window === "undefined") return;
+  try {
+    if (!sessionStorage.getItem("adhd-booking") || !sessionStorage.getItem("adhd-transaction-id")) {
+      throw redirect({ to: "/checkout" });
+    }
+  } catch (e) {
+    if (e && typeof e === "object" && "isRedirect" in e) throw e;
+    throw redirect({ to: "/checkout" });
+  }
+}
+
 export const Route = createFileRoute("/thank-you")({
+  beforeLoad: requireSuccessfulSubmission,
   head: () => ({
     meta: [
       { title: TITLE },
