@@ -91,7 +91,10 @@ const upsells = [
 ];
 
 function ThankYouPage() {
+  const navigate = useNavigate();
+  // null = verifying, false = no successful submission (redirecting away)
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [verified, setVerified] = useState(false);
 
   useEffect(() => {
     let parsed: Booking | null = null;
@@ -103,20 +106,30 @@ function ThankYouPage() {
     } catch {
       /* ignore */
     }
-    if (parsed) setBooking(parsed);
 
-    // Fire Purchase ONLY when this page was reached via a successful form
-    // submission (booking + transaction ID present). Direct visits to
-    // /thank-you without a completed checkout never track a purchase, and
-    // trackPurchase dedupes on the transaction ID so refreshes don't re-fire.
-    if (parsed && transactionId) {
-      trackPurchase({
-        value: SESSION_PRICE,
-        currency: "PKR",
-        transactionId,
-      });
+    // Gate: this page is ONLY for successful submissions. Direct visits,
+    // typed URLs, or arrivals after a failed submission have no markers —
+    // send them back to the checkout form. No Purchase is ever fired here.
+    if (!parsed || !transactionId) {
+      void navigate({ to: "/checkout", replace: true });
+      return;
     }
-  }, []);
+
+    setBooking(parsed);
+    setVerified(true);
+
+    // Fire Purchase exactly once per successful submission. trackPurchase
+    // dedupes on the transaction ID (localStorage) so refreshes don't re-fire.
+    trackPurchase({
+      value: SESSION_PRICE,
+      currency: "PKR",
+      transactionId,
+    });
+  }, [navigate]);
+
+  // Render nothing until the successful-submission markers are verified —
+  // the confirmation UI must never be visible without a real submission.
+  if (!verified) return null;
 
   const summary = [
     { label: "Name", value: booking?.["fullName"] || "—" },
