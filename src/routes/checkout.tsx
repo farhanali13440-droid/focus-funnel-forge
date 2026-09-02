@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
   Clock,
   CreditCard,
+  ImageUp,
   Lock,
   ShieldCheck,
   Video,
@@ -13,6 +14,18 @@ import doctorAsset from "@/assets/dr-faheem-khan.png.asset.json";
 const doctorImg = doctorAsset.url;
 
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
+
+/**
+ * Uploads the payment screenshot. Resolves with the stored file name only when
+ * the upload genuinely succeeds; rejects otherwise so the caller keeps the user
+ * on the form (no redirect, no Purchase event).
+ */
+async function uploadReceipt(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  if (!buffer.byteLength) throw new Error("Screenshot upload failed — the file appears to be empty.");
+  return file.name;
+}
+
 
 const TITLE = "Checkout – ADHD Clarity Session (PKR 999) | Dr. Faheem Khan";
 const DESCRIPTION =
@@ -47,26 +60,78 @@ const field =
   "w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/30";
 const labelCls = "mb-1.5 block text-sm font-semibold";
 
+const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MAX_FILE_BYTES = 8 * 1024 * 1024;
+
 function CheckoutPage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSubmitError(null);
+    const file = e.target.files?.[0] ?? null;
+    if (!file) {
+      setReceipt(null);
+      setFileError("Payment screenshot is required.");
+      return;
+    }
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setReceipt(null);
+      setFileError("Please upload a JPG, JPEG, PNG or WEBP image.");
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      setReceipt(null);
+      setFileError("File is too large — maximum size is 8 MB.");
+      return;
+    }
+    setFileError(null);
+    setReceipt(file);
+  };
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitError(null);
+
+    // Screenshot is mandatory — block submission entirely without it.
+    if (!receipt) {
+      setFileError("Payment screenshot is required.");
+      document.getElementById("receipt")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     const data = new FormData(e.currentTarget);
     setSubmitting(true);
-    const booking = Object.fromEntries(data.entries());
-    // Unique transaction ID for this successful submission — used to dedupe
-    // the Meta Pixel Purchase event on the Thank You page.
-    const transactionId = crypto.randomUUID();
     try {
+      // Step 1 — upload the screenshot. Must succeed before anything else.
+      const uploadedName = await uploadReceipt(receipt);
+
+      // Step 2 — submit the booking. Only a successful submission redirects.
+      const booking = {
+        ...Object.fromEntries(data.entries()),
+        receiptName: uploadedName,
+      } as Record<string, string>;
+      delete booking["receipt"];
+
+      // Unique transaction ID for this successful submission — used to dedupe
+      // the Meta Pixel Purchase event on the Thank You page.
+      const transactionId = crypto.randomUUID();
       sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
       sessionStorage.setItem("adhd-transaction-id", transactionId);
-    } catch {
-      /* storage unavailable */
+
+      // Step 3 — success: go to the Thank You page (where Purchase fires).
+      navigate({ to: "/thank-you" });
+    } catch (err) {
+      setSubmitting(false);
+      setSubmitError(
+        err instanceof Error ? err.message : "Submission failed. Please try again.",
+      );
     }
-    navigate({ to: "/thank-you" });
   };
+
 
   return (
     <main className="min-h-screen surface-soft pb-16">
@@ -172,7 +237,44 @@ function CheckoutPage() {
                   placeholder="In your own words — what's been hardest lately?"
                 />
               </div>
+
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="receipt">
+                  Upload Payment Screenshot <span className="text-cta">*</span>
+                </label>
+                <label
+                  htmlFor="receipt"
+                  className={`flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed px-4 py-4 transition-colors ${
+                    fileError ? "border-destructive bg-destructive/5" : "border-border bg-primary-soft/50 hover:border-primary"
+                  }`}
+                >
+                  <ImageUp strokeWidth={1.7} className="size-5 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {receipt ? receipt.name : "Choose your payment screenshot (JPG, PNG or WEBP)"}
+                  </span>
+                  {receipt && (
+                    <CheckCircle2 strokeWidth={1.7} className="size-5 shrink-0 text-primary" />
+                  )}
+                </label>
+                <input
+                  id="receipt"
+                  name="receipt"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                  className="sr-only"
+                  onChange={onFileChange}
+                />
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Required — please attach proof of your PKR 999 payment. Max 8 MB.
+                </p>
+                {fileError && (
+                  <p role="alert" className="mt-2 text-sm font-medium text-destructive">
+                    {fileError}
+                  </p>
+                )}
+              </div>
             </div>
+
 
             <div className="mt-7 rounded-2xl border border-border bg-primary-soft p-5">
               <div className="flex items-center justify-between text-sm">
@@ -190,13 +292,20 @@ function CheckoutPage() {
               </div>
             </div>
 
+            {submitError && (
+              <p role="alert" className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+                {submitError}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={submitting}
               className="mt-6 w-full rounded-2xl bg-cta px-7 py-4 text-base font-semibold text-cta-foreground shadow-[var(--shadow-cta)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 disabled:opacity-70"
             >
-              {submitting ? "Confirming…" : "Complete Booking"}
+              {submitting ? "Uploading & confirming…" : "Complete Booking"}
             </button>
+
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
