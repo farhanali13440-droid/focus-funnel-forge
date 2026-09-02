@@ -64,6 +64,6 @@ export function trackPurchase({ value, transactionId, currency = "PKR" }: Purcha
   window.fbq("track", "Purchase", {
     value,
     currency,
-    content_name: "ADHD Clarity Session",
+    contents: [{ quantity: 1 }],
   });
 }
