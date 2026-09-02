@@ -43,14 +43,15 @@ const DESCRIPTION =
  */
 function requireSuccessfulSubmission() {
   if (typeof window === "undefined") return;
+  let hasSubmission = false;
   try {
-    if (!sessionStorage.getItem("adhd-booking") || !sessionStorage.getItem("adhd-transaction-id")) {
-      throw redirect({ to: "/checkout" });
-    }
-  } catch (e) {
-    if (e && typeof e === "object" && "isRedirect" in e) throw e;
-    throw redirect({ to: "/checkout" });
+    hasSubmission = Boolean(
+      sessionStorage.getItem("adhd-booking") && sessionStorage.getItem("adhd-transaction-id"),
+    );
+  } catch {
+    hasSubmission = false;
   }
+  if (!hasSubmission) throw redirect({ to: "/checkout" });
 }
 
 export const Route = createFileRoute("/thank-you")({
