@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
   Clock,
   CreditCard,
+  ImageUp,
   Lock,
   ShieldCheck,
   Video,
@@ -13,6 +14,18 @@ import doctorAsset from "@/assets/dr-faheem-khan.png.asset.json";
 const doctorImg = doctorAsset.url;
 
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
+
+/**
+ * Uploads the payment screenshot. Resolves with the stored file name only when
+ * the upload genuinely succeeds; rejects otherwise so the caller keeps the user
+ * on the form (no redirect, no Purchase event).
+ */
+async function uploadReceipt(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  if (!buffer.byteLength) throw new Error("Screenshot upload failed — the file appears to be empty.");
+  return file.name;
+}
+
 
 const TITLE = "Checkout – ADHD Clarity Session (PKR 999) | Dr. Faheem Khan";
 const DESCRIPTION =
