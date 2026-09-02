@@ -292,13 +292,20 @@ function CheckoutPage() {
               </div>
             </div>
 
+            {submitError && (
+              <p role="alert" className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+                {submitError}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={submitting}
               className="mt-6 w-full rounded-2xl bg-cta px-7 py-4 text-base font-semibold text-cta-foreground shadow-[var(--shadow-cta)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 disabled:opacity-70"
             >
-              {submitting ? "Confirming…" : "Complete Booking"}
+              {submitting ? "Uploading & confirming…" : "Complete Booking"}
             </button>
+
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
