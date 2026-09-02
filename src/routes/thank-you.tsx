@@ -23,6 +23,10 @@ import {
   SectionHeading,
   WHATSAPP_URL,
 } from "@/components/funnel/primitives";
+import { trackPurchase } from "@/lib/meta-pixel";
+
+/** Fixed offer price — must match the price shown at checkout. */
+const SESSION_PRICE = 999;
 
 const TITLE = "You're Booked – ADHD Clarity Session | Dr. Faheem Khan";
 const DESCRIPTION =
