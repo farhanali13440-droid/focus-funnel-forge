@@ -14,6 +14,8 @@ import doctorAsset from "@/assets/dr-faheem-khan.png.asset.json";
 const doctorImg = doctorAsset.url;
 
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
+import { supabase } from "@/integrations/supabase/client";
+
 
 /**
  * Uploads the payment screenshot to permanent cloud storage. Resolves with the
