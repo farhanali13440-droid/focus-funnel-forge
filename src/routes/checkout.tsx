@@ -116,24 +116,43 @@ function CheckoutPage() {
     const data = new FormData(e.currentTarget);
     setSubmitting(true);
     try {
-      // Step 1 — upload the screenshot. Must succeed before anything else.
-      const uploadedName = await uploadReceipt(receipt);
+      // Unique transaction ID for this submission — also dedupes the Meta Pixel
+      // Purchase event on the Thank You page.
+      const transactionId = crypto.randomUUID();
 
-      // Step 2 — submit the booking. Only a successful submission redirects.
+      // Step 1 — upload the screenshot. Must succeed before anything else.
+      const receiptPath = await uploadReceipt(receipt, transactionId);
+
+      // Step 2 — save the booking permanently. Only a successful save redirects.
       const booking = {
         ...Object.fromEntries(data.entries()),
-        receiptName: uploadedName,
+        receiptName: receipt.name,
       } as Record<string, string>;
       delete booking["receipt"];
 
-      // Unique transaction ID for this successful submission — used to dedupe
-      // the Meta Pixel Purchase event on the Thank You page.
-      const transactionId = crypto.randomUUID();
+      const { error: insertError } = await supabase.from("bookings").insert({
+        transaction_id: transactionId,
+        full_name: booking["fullName"] ?? "",
+        age: booking["age"] ? Number(booking["age"]) : null,
+        city: booking["city"] ?? null,
+        phone: booking["phone"] ?? "",
+        whatsapp: booking["whatsapp"] ?? null,
+        email: booking["email"] ?? null,
+        patient_type: booking["patientType"] ?? null,
+        mode: booking["mode"] ?? null,
+        preferred_date: booking["date"] || null,
+        preferred_time: booking["time"] || null,
+        concern: booking["concern"] || null,
+        receipt_path: receiptPath,
+      });
+      if (insertError) throw new Error("Submission failed. Please try again.");
+
       sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
       sessionStorage.setItem("adhd-transaction-id", transactionId);
 
       // Step 3 — success: go to the Thank You page (where Purchase fires).
       navigate({ to: "/thank-you" });
+
     } catch (err) {
       setSubmitting(false);
       setSubmitError(
