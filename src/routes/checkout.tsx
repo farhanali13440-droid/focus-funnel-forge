@@ -16,15 +16,23 @@ const doctorImg = doctorAsset.url;
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
 
 /**
- * Uploads the payment screenshot. Resolves with the stored file name only when
- * the upload genuinely succeeds; rejects otherwise so the caller keeps the user
- * on the form (no redirect, no Purchase event).
+ * Uploads the payment screenshot to permanent cloud storage. Resolves with the
+ * stored file path only when the upload genuinely succeeds; rejects otherwise so
+ * the caller keeps the user on the form (no redirect, no Purchase event).
  */
-async function uploadReceipt(file: File): Promise<string> {
+async function uploadReceipt(file: File, transactionId: string): Promise<string> {
   const buffer = await file.arrayBuffer();
   if (!buffer.byteLength) throw new Error("Screenshot upload failed — the file appears to be empty.");
-  return file.name;
+
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `${transactionId}.${ext}`;
+  const { error } = await supabase.storage
+    .from("payment-receipts")
+    .upload(path, file, { contentType: file.type, upsert: true });
+  if (error) throw new Error("Screenshot upload failed. Please check your connection and try again.");
+  return path;
 }
+
 
 
 const TITLE = "Checkout – ADHD Clarity Session (PKR 999) | Dr. Faheem Khan";
