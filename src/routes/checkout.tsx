@@ -30,7 +30,7 @@ async function uploadReceipt(file: File, transactionId: string): Promise<string>
   const path = `${transactionId}.${ext}`;
   const { error } = await supabase.storage
     .from("payment-receipts")
-    .upload(path, file, { contentType: file.type, upsert: true });
+    .upload(path, file, { contentType: file.type });
   if (error) throw new Error("Screenshot upload failed. Please check your connection and try again.");
   return path;
 }
