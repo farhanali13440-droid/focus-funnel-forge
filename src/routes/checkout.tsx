@@ -14,17 +14,27 @@ import doctorAsset from "@/assets/dr-faheem-khan.png.asset.json";
 const doctorImg = doctorAsset.url;
 
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
+import { supabase } from "@/integrations/supabase/client";
+
 
 /**
- * Uploads the payment screenshot. Resolves with the stored file name only when
- * the upload genuinely succeeds; rejects otherwise so the caller keeps the user
- * on the form (no redirect, no Purchase event).
+ * Uploads the payment screenshot to permanent cloud storage. Resolves with the
+ * stored file path only when the upload genuinely succeeds; rejects otherwise so
+ * the caller keeps the user on the form (no redirect, no Purchase event).
  */
-async function uploadReceipt(file: File): Promise<string> {
+async function uploadReceipt(file: File, transactionId: string): Promise<string> {
   const buffer = await file.arrayBuffer();
   if (!buffer.byteLength) throw new Error("Screenshot upload failed — the file appears to be empty.");
-  return file.name;
+
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `${transactionId}.${ext}`;
+  const { error } = await supabase.storage
+    .from("payment-receipts")
+    .upload(path, file, { contentType: file.type });
+  if (error) throw new Error("Screenshot upload failed. Please check your connection and try again.");
+  return path;
 }
+
 
 
 const TITLE = "Checkout – ADHD Clarity Session (PKR 999) | Dr. Faheem Khan";
@@ -106,24 +116,43 @@ function CheckoutPage() {
     const data = new FormData(e.currentTarget);
     setSubmitting(true);
     try {
-      // Step 1 — upload the screenshot. Must succeed before anything else.
-      const uploadedName = await uploadReceipt(receipt);
+      // Unique transaction ID for this submission — also dedupes the Meta Pixel
+      // Purchase event on the Thank You page.
+      const transactionId = crypto.randomUUID();
 
-      // Step 2 — submit the booking. Only a successful submission redirects.
+      // Step 1 — upload the screenshot. Must succeed before anything else.
+      const receiptPath = await uploadReceipt(receipt, transactionId);
+
+      // Step 2 — save the booking permanently. Only a successful save redirects.
       const booking = {
         ...Object.fromEntries(data.entries()),
-        receiptName: uploadedName,
+        receiptName: receipt.name,
       } as Record<string, string>;
       delete booking["receipt"];
 
-      // Unique transaction ID for this successful submission — used to dedupe
-      // the Meta Pixel Purchase event on the Thank You page.
-      const transactionId = crypto.randomUUID();
+      const { error: insertError } = await supabase.from("bookings").insert({
+        transaction_id: transactionId,
+        full_name: booking["fullName"] ?? "",
+        age: booking["age"] ? Number(booking["age"]) : null,
+        city: booking["city"] ?? null,
+        phone: booking["phone"] ?? "",
+        whatsapp: booking["whatsapp"] ?? null,
+        email: booking["email"] ?? null,
+        patient_type: booking["patientType"] ?? null,
+        mode: booking["mode"] ?? null,
+        preferred_date: booking["date"] || null,
+        preferred_time: booking["time"] || null,
+        concern: booking["concern"] || null,
+        receipt_path: receiptPath,
+      });
+      if (insertError) throw new Error("Submission failed. Please try again.");
+
       sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
       sessionStorage.setItem("adhd-transaction-id", transactionId);
 
       // Step 3 — success: go to the Thank You page (where Purchase fires).
       navigate({ to: "/thank-you" });
+
     } catch (err) {
       setSubmitting(false);
       setSubmitError(
