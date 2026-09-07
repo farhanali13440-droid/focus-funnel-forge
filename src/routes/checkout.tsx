@@ -354,7 +354,7 @@ function CheckoutPage() {
               {submitting ? "Uploading & confirming…" : "RESERVE MY SEAT"}
             </button>
 
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <div className="mt-5 flex flex-wrap items-center justify-start gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Lock strokeWidth={1.7} className="size-4" /> Secure &amp; encrypted
               </span>
@@ -406,7 +406,7 @@ function CheckoutPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 rounded-2xl bg-primary-soft p-5 text-center">
+              <div className="mt-6 rounded-2xl bg-primary-soft p-5 text-left">
                 <p className="text-xs font-semibold tracking-[0.14em] text-primary-deep uppercase">
                   Workshop fee
                 </p>
