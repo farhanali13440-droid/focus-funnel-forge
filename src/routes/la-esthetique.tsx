@@ -629,18 +629,18 @@ function ClinicGallery() {
           ))}
         </div>
       </div>
-      {lightbox !== null && (
+      {lightbox !== null && GALLERY[lightbox] && (
         <div
           className="fixed inset-0 z-[70] grid place-items-center bg-foreground/70 p-5 backdrop-blur-sm"
           onClick={() => setLightbox(null)}
           role="dialog"
           aria-modal="true"
-          aria-label={GALLERY[lightbox].label}
+          aria-label={GALLERY[lightbox]!.label}
         >
           <div className="relative max-h-[85vh] w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <img
-              src={GALLERY[lightbox].img}
-              alt={GALLERY[lightbox].alt}
+              src={GALLERY[lightbox]!.img}
+              alt={GALLERY[lightbox]!.alt}
               className="max-h-[85vh] w-full rounded-2xl object-contain"
             />
             <button
