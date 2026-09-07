@@ -164,3 +164,38 @@
 @utility animate-fade-up {
   animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/*
+ * La Esthetique clinic theme — scoped under .le-theme so the rest of the
+ * project is untouched. When the official logo arrives, update these tokens.
+ */
+.le-theme {
+  --radius: 0.75rem;
+  --background: oklch(0.985 0.008 90); /* warm ivory */
+  --foreground: oklch(0.3 0.02 160);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.3 0.02 160);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.3 0.02 160);
+  --primary: oklch(0.42 0.05 165); /* deep pine green */
+  --primary-foreground: oklch(0.985 0.008 90);
+  --primary-deep: oklch(0.33 0.045 165);
+  --primary-soft: oklch(0.955 0.02 150);
+  --secondary: oklch(0.955 0.02 150);
+  --secondary-foreground: oklch(0.33 0.045 165);
+  --muted: oklch(0.96 0.012 110);
+  --muted-foreground: oklch(0.5 0.015 160);
+  --accent: oklch(0.93 0.03 95);
+  --accent-foreground: oklch(0.35 0.04 160);
+  --cta: oklch(0.68 0.11 75); /* muted champagne gold */
+  --cta-foreground: oklch(0.25 0.03 160);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.015 130);
+  --input: oklch(0.92 0.015 130);
+  --ring: oklch(0.42 0.05 165);
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+}
