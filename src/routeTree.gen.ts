@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as LaEsthetiqueRouteImport } from './routes/la-esthetique'
 import { Route as ThankYouRouteImport } from './routes/thank-you'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LaEsthetiqueRoute = LaEsthetiqueRouteImport.update({
+  id: '/la-esthetique',
+  path: '/la-esthetique',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ThankYouRoute = ThankYouRouteImport.update({
   id: '/thank-you',
   path: '/thank-you',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/checkout': typeof CheckoutRoute
+  '/la-esthetique': typeof LaEsthetiqueRoute
   '/thank-you': typeof ThankYouRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/checkout': typeof CheckoutRoute
+  '/la-esthetique': typeof LaEsthetiqueRoute
   '/thank-you': typeof ThankYouRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,23 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/checkout': typeof CheckoutRoute
+  '/la-esthetique': typeof LaEsthetiqueRoute
   '/thank-you': typeof ThankYouRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/checkout' | '/thank-you'
+  fullPaths: '/' | '/admin' | '/checkout' | '/la-esthetique' | '/thank-you'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/checkout' | '/thank-you'
-  id: '__root__' | '/' | '/admin' | '/checkout' | '/thank-you'
+  to: '/' | '/admin' | '/checkout' | '/la-esthetique' | '/thank-you'
+  id:
+    '__root__' | '/' | '/admin' | '/checkout' | '/la-esthetique' | '/thank-you'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   CheckoutRoute: typeof CheckoutRoute
+  LaEsthetiqueRoute: typeof LaEsthetiqueRoute
   ThankYouRoute: typeof ThankYouRoute
 }
 
@@ -92,6 +103,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/la-esthetique': {
+      id: '/la-esthetique'
+      path: '/la-esthetique'
+      fullPath: '/la-esthetique'
+      preLoaderRoute: typeof LaEsthetiqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/thank-you': {
       id: '/thank-you'
       path: '/thank-you'
@@ -106,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   CheckoutRoute: CheckoutRoute,
+  LaEsthetiqueRoute: LaEsthetiqueRoute,
   ThankYouRoute: ThankYouRoute,
 }
 export const routeTree = rootRouteImport
