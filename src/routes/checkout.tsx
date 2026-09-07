@@ -261,28 +261,29 @@ function CheckoutPage() {
                   Transfer the workshop fee to the account below, then upload your payment
                   screenshot to confirm your seat.
                 </p>
-                <dl className="mt-4 space-y-2.5 text-sm">
-                  <div className="flex flex-wrap justify-between gap-2">
-                    <dt className="text-muted-foreground">Account title</dt>
+                <dl className="mt-4 space-y-3 text-left text-sm">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Account title</dt>
                     <dd className="font-semibold">Spring North Hospital</dd>
                   </div>
-                  <div className="flex flex-wrap justify-between gap-2">
-                    <dt className="text-muted-foreground">Bank</dt>
-                    <dd className="text-right font-semibold">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Bank</dt>
+                    <dd className="font-semibold">
                       Askari Bank Limited — Bahria Town Phase 7, Rawalpindi
                     </dd>
                   </div>
-                  <div className="flex flex-wrap justify-between gap-2">
-                    <dt className="text-muted-foreground">Account number</dt>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Account number</dt>
                     <dd className="font-semibold tabular-nums">07350200031110</dd>
                   </div>
-                  <div className="flex flex-wrap justify-between gap-2">
-                    <dt className="text-muted-foreground">IBAN</dt>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">IBAN</dt>
                     <dd className="font-semibold tabular-nums break-all">
                       PK21ASCM0007350200031110
                     </dd>
                   </div>
                 </dl>
+
               </div>
 
               <div className="sm:col-span-2">
