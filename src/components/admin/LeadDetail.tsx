@@ -44,6 +44,7 @@ export function LeadDetail({ lead, onClose, onChanged, onEdit }: Props) {
   const [savingInfo, setSavingInfo] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [editing, setEditing] = useState<LeadPayment | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
