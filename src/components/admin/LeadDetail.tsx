@@ -296,50 +296,64 @@ export function LeadDetail({ lead, onClose, onChanged, onEdit }: Props) {
       <section className="mt-6 rounded-2xl border border-border p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-sm font-semibold">Payment history</h3>
-          <button type="button" onClick={() => setShowPaymentForm((v) => !v)} className="inline-flex items-center gap-1.5 rounded-xl bg-cta px-3 py-2 text-sm font-semibold text-cta-foreground">
+          <button
+            type="button"
+            onClick={() => {
+              setEditing(null);
+              setPaymentError(null);
+              setShowPaymentForm((v) => !v);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-cta px-3 py-2 text-sm font-semibold text-cta-foreground"
+          >
             <Plus className="size-4" strokeWidth={2} /> Add payment
           </button>
         </div>
 
         {showPaymentForm && (
-          <form onSubmit={addPayment} className="mt-4 grid gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:grid-cols-2">
+          <form key={editing?.id ?? "new"} onSubmit={savePayment} className="mt-4 grid gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:grid-cols-2">
+            <p className="sm:col-span-2 text-sm font-semibold">{editing ? "Edit payment" : "New payment"}</p>
             <div>
               <label className={labelCls} htmlFor="pay-amount">Amount (PKR)</label>
-              <input id="pay-amount" name="amount" type="number" min={0} step="1" required className={inputCls} />
+              <input id="pay-amount" name="amount" type="number" min={0} step="1" required defaultValue={editing ? Number(editing.amount) : undefined} className={inputCls} />
             </div>
             <div>
               <label className={labelCls} htmlFor="pay-date">Payment date</label>
-              <input id="pay-date" name="payment_date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className={inputCls} />
+              <input id="pay-date" name="payment_date" type="date" defaultValue={editing?.payment_date ?? new Date().toISOString().slice(0, 10)} className={inputCls} />
             </div>
             <div>
               <label className={labelCls} htmlFor="pay-method">Payment method</label>
-              <select id="pay-method" name="payment_method" className={inputCls}>
+              <select id="pay-method" name="payment_method" defaultValue={editing?.payment_method ?? "Bank Transfer"} className={inputCls}>
                 {PAYMENT_METHODS.map((m) => <option key={m}>{m}</option>)}
               </select>
             </div>
             <div>
               <label className={labelCls} htmlFor="pay-status">Payment status</label>
-              <select id="pay-status" name="status" className={inputCls}>
+              <select id="pay-status" name="status" defaultValue={editing?.status ?? "Pending Verification"} className={inputCls}>
                 {PAYMENT_STATUSES.map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
               <label className={labelCls} htmlFor="pay-txn">Transaction / reference ID</label>
-              <input id="pay-txn" name="transaction_id" maxLength={120} className={inputCls} />
+              <input id="pay-txn" name="transaction_id" maxLength={120} defaultValue={editing?.transaction_id ?? ""} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls} htmlFor="pay-file">Payment screenshot / proof</label>
+              <label className={labelCls} htmlFor="pay-file">
+                {editing?.file_path ? "Replace screenshot / proof" : "Payment screenshot / proof"}
+              </label>
               <input id="pay-file" name="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className={inputCls} />
+              {editing?.file_name && (
+                <p className="mt-1 text-xs text-muted-foreground">Current: {editing.file_name} — leave empty to keep it.</p>
+              )}
             </div>
             <div className="sm:col-span-2">
               <label className={labelCls} htmlFor="pay-notes">Notes</label>
-              <textarea id="pay-notes" name="notes" rows={2} maxLength={1000} className={inputCls} />
+              <textarea id="pay-notes" name="notes" rows={2} maxLength={1000} defaultValue={editing?.notes ?? ""} className={inputCls} />
             </div>
             {paymentError && <p className="sm:col-span-2 text-sm text-destructive">{paymentError}</p>}
             <div className="sm:col-span-2 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowPaymentForm(false)} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold">Cancel</button>
+              <button type="button" onClick={() => { setShowPaymentForm(false); setEditing(null); }} className="rounded-xl border border-border px-4 py-2 text-sm font-semibold">Cancel</button>
               <button type="submit" disabled={uploading} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                {uploading ? "Saving…" : "Save payment"}
+                {uploading ? "Saving…" : editing ? "Update payment" : "Save payment"}
               </button>
             </div>
           </form>
