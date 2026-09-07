@@ -4,6 +4,7 @@ import {
   Eye,
   FileText,
   MessageCircle,
+  Pencil,
   Phone,
   Plus,
   Trash2,
