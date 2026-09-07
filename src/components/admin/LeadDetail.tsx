@@ -387,9 +387,18 @@ export function LeadDetail({ lead, onClose, onChanged, onEdit }: Props) {
                   </button>
                 </div>
               )}
-              <button type="button" onClick={() => deletePayment(p)} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-destructive">
-                <Trash2 className="size-3.5" strokeWidth={1.8} /> Delete
-              </button>
+              <div className="mt-3 flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => { setEditing(p); setPaymentError(null); setShowPaymentForm(true); }}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary"
+                >
+                  <Pencil className="size-3.5" strokeWidth={1.8} /> Edit
+                </button>
+                <button type="button" onClick={() => deletePayment(p)} className="inline-flex items-center gap-1 text-xs font-semibold text-destructive">
+                  <Trash2 className="size-3.5" strokeWidth={1.8} /> Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
