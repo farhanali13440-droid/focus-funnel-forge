@@ -16,6 +16,8 @@ const doctorImg = doctorAsset.url;
 
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
 import { supabase } from "@/integrations/supabase/client";
+import { captureAttribution } from "@/lib/crm";
+
 
 /* Editable workshop details — keep in sync with the landing page. */
 const WORKSHOP_DATE = "Sunday 13 September 2026";
@@ -150,8 +152,29 @@ function CheckoutPage() {
       });
       if (insertError) throw new Error("Registration failed. Please try again.");
 
+      // Step 2b — mirror the registration into the private lead database.
+      // Never blocks the visitor's success flow.
+      try {
+        const attribution = captureAttribution();
+        await supabase.from("leads").insert({
+          full_name: booking["fullName"] ?? "",
+          phone: booking["phone"] ?? null,
+          whatsapp: booking["whatsapp"] ?? null,
+          email: booking["email"] ?? null,
+          city: booking["city"] ?? null,
+          service: "ADHD Clarity Workshop",
+          source: attribution.utm_source ? "Other" : "Website",
+          status: "New",
+          notes: booking["concern"] || null,
+          ...attribution,
+        });
+      } catch {
+        /* lead mirroring is best-effort */
+      }
+
       sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
       sessionStorage.setItem("adhd-transaction-id", transactionId);
+
 
       // Step 3 — success: go to the Thank You page (where Purchase fires).
       navigate({ to: "/thank-you" });
