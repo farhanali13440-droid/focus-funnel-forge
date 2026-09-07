@@ -109,17 +109,19 @@ export function LeadDetail({ lead, onClose, onChanged, onEdit }: Props) {
     await load();
   };
 
-  const addPayment = async (e: FormEvent<HTMLFormElement>) => {
+  const savePayment = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPaymentError(null);
     const form = e.currentTarget;
     const fd = new FormData(form);
     const file = fd.get("file") as File | null;
+    const existing = editing;
 
-    let filePath: string | null = null;
-    let fileName: string | null = null;
-    let fileType: string | null = null;
-    let fileSize: number | null = null;
+    let filePath: string | null = existing?.file_path ?? null;
+    let fileName: string | null = existing?.file_name ?? null;
+    let fileType: string | null = existing?.file_type ?? null;
+    let fileSize: number | null = existing?.file_size ?? null;
+    let replacedPath: string | null = null;
 
     setUploading(true);
     try {
@@ -131,18 +133,20 @@ export function LeadDetail({ lead, onClose, onChanged, onEdit }: Props) {
           throw new Error("File is too large — maximum size is 10 MB.");
         }
         const safe = sanitizeFileName(file.name);
-        filePath = `${lead.id}/${crypto.randomUUID()}-${safe}`;
+        const newPath = `${lead.id}/${crypto.randomUUID()}-${safe}`;
         const { error: upErr } = await supabase.storage
           .from("payment-proofs")
-          .upload(filePath, file, { contentType: file.type });
+          .upload(newPath, file, { contentType: file.type });
         if (upErr) throw new Error("Upload failed. Please try again.");
+        replacedPath = existing?.file_path ?? null;
+        filePath = newPath;
         fileName = safe;
         fileType = file.type;
         fileSize = file.size;
       }
 
       const amount = Number(fd.get("amount") || 0);
-      const { error: insErr } = await supabase.from("lead_payments").insert({
+      const row = {
         lead_id: lead.id,
         amount: Number.isFinite(amount) ? amount : 0,
         payment_date: (fd.get("payment_date") as string) || new Date().toISOString().slice(0, 10),
@@ -154,16 +158,27 @@ export function LeadDetail({ lead, onClose, onChanged, onEdit }: Props) {
         file_name: fileName,
         file_type: fileType,
         file_size: fileSize,
-      });
-      if (insErr) throw new Error("Could not save this payment.");
+      };
+
+      if (existing) {
+        const { error: updErr } = await supabase.from("lead_payments").update(row).eq("id", existing.id);
+        if (updErr) throw new Error("Could not update this payment.");
+      } else {
+        const { error: insErr } = await supabase.from("lead_payments").insert(row);
+        if (insErr) throw new Error("Could not save this payment.");
+      }
+
+      // Remove the replaced file only after the new one is stored and linked.
+      if (replacedPath) await supabase.storage.from("payment-proofs").remove([replacedPath]);
 
       await supabase.from("lead_activities").insert({
         lead_id: lead.id,
         activity_type: "Note",
-        description: `Payment recorded: ${money(amount)} via ${fd.get("payment_method")}`,
+        description: `${existing ? "Payment updated" : "Payment recorded"}: ${money(amount)} via ${row.payment_method} (${row.status})`,
       });
 
       form.reset();
+      setEditing(null);
       setShowPaymentForm(false);
       await load();
       onChanged();
