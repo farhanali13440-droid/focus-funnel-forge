@@ -27,13 +27,13 @@ import { trackPurchase } from "@/lib/meta-pixel";
 /** Fixed offer price — must match the price shown at checkout. */
 const SESSION_PRICE = 999;
 
-const TITLE = "You're Registered – ADHD Clarity Webinar | Dr. Faheem Khan";
+const TITLE = "You're Registered – ADHD Clarity Workshop | Dr. Faheem Khan";
 const DESCRIPTION =
-  "Your seat for the live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan is reserved. Here are your webinar details and what happens next.";
+  "Your seat for the live ADHD Clarity Workshop with Dr. Mohammad Faheem Khan is reserved. Here are your workshop details and what happens next.";
 
-/* Editable webinar details — keep in sync with the landing page. */
-const WEBINAR_DATE = "Sunday 13 September 2026";
-const WEBINAR_TIME = "5:30 PM – 6:30 PM PKT";
+/* Editable workshop details — keep in sync with the landing page. */
+const WORKSHOP_DATE = "Sunday 13 September 2026";
+const WORKSHOP_TIME = "5:30 PM – 6:30 PM PKT";
 
 /**
  * Gate: /thank-you is ONLY reachable after a successful checkout submission.
@@ -79,7 +79,7 @@ type Booking = Record<string, string>;
 
 const nextSteps = [
   { title: "Save our WhatsApp number", body: "So your joining link and reminders don't get missed." },
-  { title: "Watch for your joining link", body: "Sent to the contact details you provided before the webinar." },
+  { title: "Watch for your joining link", body: "Sent to the contact details you provided before the workshop." },
   { title: "Join on time", body: "Find a quiet spot with a stable connection and headphones if possible." },
   { title: "Bring your questions", body: "There is time to ask relevant questions during the live session." },
   { title: "Consider your next steps", body: "If further support feels appropriate, you can explore professional assessment afterwards." },
@@ -136,10 +136,10 @@ function ThankYouPage() {
 
   const summary = [
     { label: "Name", value: booking?.["fullName"] || "—" },
-    { label: "Event", value: "Live ADHD Clarity Webinar" },
+    { label: "Event", value: "Live ADHD Clarity Workshop" },
     { label: "Format", value: "Live online" },
-    { label: "Date", value: WEBINAR_DATE },
-    { label: "Time", value: WEBINAR_TIME },
+    { label: "Date", value: WORKSHOP_DATE },
+    { label: "Time", value: WORKSHOP_TIME },
     { label: "Paid", value: "PKR 999" },
   ];
 
@@ -149,9 +149,9 @@ function ThankYouPage() {
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
       "BEGIN:VEVENT",
-      "SUMMARY:Live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan",
+      "SUMMARY:Live ADHD Clarity Workshop with Dr. Mohammad Faheem Khan",
       start ? `DTSTART:${start}` : "",
-      "DESCRIPTION:Live online ADHD Clarity Webinar. Please join 5 minutes early.",
+      "DESCRIPTION:Live online ADHD Clarity Workshop. Please join 5 minutes early.",
       "END:VEVENT",
       "END:VCALENDAR",
     ]
@@ -160,7 +160,7 @@ function ThankYouPage() {
     const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = "adhd-clarity-webinar.ics";
+    a.download = "adhd-clarity-workshop.ics";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -174,7 +174,7 @@ function ThankYouPage() {
           </span>
           <h1 className="mt-6 text-4xl font-semibold sm:text-5xl">You&apos;re Registered!</h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Your seat for the ADHD Clarity Webinar has been reserved. You&apos;ll receive the webinar
+            Your seat for the ADHD Clarity Workshop has been reserved. You&apos;ll receive the workshop
             access details and reminders on the contact information you provided.
           </p>
 
@@ -210,7 +210,7 @@ function ThankYouPage() {
             <div className="mt-7 grid gap-5 sm:grid-cols-2">
               <div>
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
-                  <Video strokeWidth={1.7} className="size-4 text-primary" /> Joining the webinar
+                  <Video strokeWidth={1.7} className="size-4 text-primary" /> Joining the workshop
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   A secure joining link is sent before the session. Join from a quiet space with
@@ -251,7 +251,7 @@ function ThankYouPage() {
             <div className="mt-5 rounded-2xl bg-primary-soft p-5 text-sm leading-relaxed">
               <Sparkles strokeWidth={1.7} className="size-4 text-primary" />
               <p className="mt-2">
-                This webinar is educational. It does not provide a diagnosis or replace a formal
+                This workshop is educational. It does not provide a diagnosis or replace a formal
                 psychiatric assessment.
               </p>
             </div>
@@ -260,7 +260,7 @@ function ThankYouPage() {
       </Section>
 
       <Section soft className="rounded-[2.5rem]">
-        <SectionHeading eyebrow="Next steps" title="Five things to do before the webinar" />
+        <SectionHeading eyebrow="Next steps" title="Five things to do before the workshop" />
         <div className="mx-auto max-w-3xl">
           <ol className="relative border-l border-border pl-8">
             {nextSteps.map((s, i) => (
@@ -279,7 +279,7 @@ function ThankYouPage() {
       <Section>
         <SectionHeading
           eyebrow="Optional next steps"
-          title="After the webinar, you may wish to explore"
+          title="After the workshop, you may wish to explore"
           subtitle="Entirely optional. Nothing is decided until you discuss it with a qualified professional."
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -300,7 +300,7 @@ function ThankYouPage() {
           </a>{" "}
           or{" "}
           <Link to="/" className="font-semibold text-primary-deep underline-offset-4 hover:underline">
-            revisit the webinar details
+            revisit the workshop details
           </Link>
           .
         </p>

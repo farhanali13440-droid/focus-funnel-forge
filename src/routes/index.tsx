@@ -53,16 +53,16 @@ import {
 } from "@/components/funnel/primitives";
 
 /* ------------------------------------------------------------------
- * EDITABLE WEBINAR DETAILS — update these three values only.
+ * EDITABLE WORKSHOP DETAILS — update these three values only.
  * ------------------------------------------------------------------ */
-export const WEBINAR_DATE = "Sunday 13 September 2026";
-export const WEBINAR_TIME = "5:30 PM – 6:30 PM PKT";
-export const WEBINAR_FEE = "PKR 999";
+export const WORKSHOP_DATE = "Sunday 13 September 2026";
+export const WORKSHOP_TIME = "5:30 PM – 6:30 PM PKT";
+export const WORKSHOP_FEE = "PKR 999";
 /* ------------------------------------------------------------------ */
 
-const TITLE = "Live ADHD Clarity Webinar | Dr. Mohammad Faheem Khan";
+const TITLE = "Live ADHD Clarity Workshop | Dr. Mohammad Faheem Khan";
 const DESCRIPTION =
-  "Join Dr. Mohammad Faheem Khan, Consultant Psychiatrist, for a live online ADHD Clarity Webinar. Understand ADHD symptoms, patterns and appropriate next steps. Reserve your seat.";
+  "Join Dr. Mohammad Faheem Khan, Consultant Psychiatrist, for a live online ADHD Clarity Workshop. Understand ADHD symptoms, patterns and appropriate next steps. Reserve your seat.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -82,7 +82,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "EducationEvent",
-          name: "ADHD Clarity Webinar",
+          name: "ADHD Clarity Workshop",
           description: DESCRIPTION,
           eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
           performer: {
@@ -100,10 +100,10 @@ export const Route = createFileRoute("/")({
 const doctorImg = doctorAsset.url;
 
 const eventFacts = [
-  { icon: CalendarDays, label: "Date", value: WEBINAR_DATE },
-  { icon: Timer, label: "Time", value: WEBINAR_TIME },
+  { icon: CalendarDays, label: "Date", value: WORKSHOP_DATE },
+  { icon: Timer, label: "Time", value: WORKSHOP_TIME },
   { icon: Video, label: "Format", value: "Live online" },
-  { icon: Wallet, label: "Fee", value: WEBINAR_FEE },
+  { icon: Wallet, label: "Fee", value: WORKSHOP_FEE },
 ];
 
 const painPoints = [
@@ -178,12 +178,12 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: "Is this a private 1-on-1 consultation?", a: "No. This is a live collective educational webinar attended by multiple participants." },
-  { q: "Will I receive an ADHD diagnosis during the webinar?", a: "No. The webinar is educational and does not replace a formal psychiatric assessment. If further assessment is appropriate, you can discuss the next steps with a qualified professional." },
+  { q: "Is this a private 1-on-1 consultation?", a: "No. This is a live collective educational workshop attended by multiple participants." },
+  { q: "Will I receive an ADHD diagnosis during the workshop?", a: "No. The workshop is educational and does not replace a formal psychiatric assessment. If further assessment is appropriate, you can discuss the next steps with a qualified professional." },
   { q: "Who can attend?", a: "Adults, university students, parents and others interested in understanding ADHD and related difficulties." },
-  { q: "Is the webinar online?", a: "Yes. The webinar is conducted live online." },
+  { q: "Is the workshop online?", a: "Yes. The workshop is conducted live online." },
   { q: "Can I ask questions?", a: "Yes. There will be an opportunity to ask relevant questions during the live session." },
-  { q: "What happens after the webinar?", a: "Attendees who feel they need further support can explore appropriate professional assessment or treatment options." },
+  { q: "What happens after the workshop?", a: "Attendees who feel they need further support can explore appropriate professional assessment or treatment options." },
 ];
 
 function EventDetails({ tone = "light" }: { tone?: "light" | "dark" }) {
@@ -227,7 +227,7 @@ function SalesPage() {
       <div className="border-b border-border bg-card px-5 py-3">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
           <span className="truncate text-sm font-semibold tracking-[0.16em] text-primary-deep uppercase">
-            ADHD Clarity Webinar
+            ADHD Clarity Workshop
           </span>
           <a
             href={WHATSAPP_URL}
@@ -243,13 +243,13 @@ function SalesPage() {
       {/* Hero */}
       <header className="organic-glow relative overflow-hidden px-5 pt-8 pb-4 sm:pt-14">
         <div className="mx-auto w-full max-w-4xl text-center">
-          <Eyebrow>Live online webinar | Limited seats</Eyebrow>
+          <Eyebrow>Live online workshop | Limited seats</Eyebrow>
           <h1 className="mt-5 text-3xl leading-[1.1] font-semibold sm:text-5xl lg:text-[3.4rem]">
             Could ADHD Be Affecting Your Life{" "}
             <span className="text-primary">Without You Realising It?</span>
           </h1>
           <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Join Dr. Mohammad Faheem Khan for a live ADHD clarity webinar and learn how attention,
+            Join Dr. Mohammad Faheem Khan for a live ADHD clarity workshop and learn how attention,
             procrastination, forgetfulness and emotional regulation difficulties may relate to ADHD.
           </p>
 
@@ -258,7 +258,7 @@ function SalesPage() {
               src={doctorImg}
               width={500}
               height={500}
-              alt="Dr. Mohammad Faheem Khan, Consultant Psychiatrist, hosting the live ADHD Clarity Webinar"
+              alt="Dr. Mohammad Faheem Khan, Consultant Psychiatrist, hosting the live ADHD Clarity Workshop"
               className="h-full w-full object-cover"
             />
           </div>
@@ -276,7 +276,7 @@ function SalesPage() {
             <CtaButton to="/checkout" className="w-full flex-col gap-0.5 sm:w-auto">
               <span>RESERVE MY SEAT</span>
               <span className="text-sm font-medium opacity-90">
-                Live online webinar | Limited seats
+                Live online workshop | Limited seats
               </span>
             </CtaButton>
           </div>
@@ -317,10 +317,10 @@ function SalesPage() {
         <div className="relative overflow-hidden rounded-[2.5rem] border border-primary/25 bg-primary-soft px-7 py-12 text-center sm:px-14">
           <Eyebrow>The event</Eyebrow>
           <h2 className="mx-auto mt-5 max-w-2xl text-3xl font-semibold sm:text-4xl">
-            Live ADHD Clarity Webinar
+            Live ADHD Clarity Workshop
           </h2>
           <p className="mx-auto mt-4 max-w-2xl leading-relaxed text-muted-foreground">
-            A live educational webinar led by Dr. Mohammad Faheem Khan, Consultant Psychiatrist, with
+            A live educational workshop led by Dr. Mohammad Faheem Khan, Consultant Psychiatrist, with
             20+ years of clinical experience — designed to help attendees better understand ADHD,
             recognise common symptoms and patterns, and learn what the appropriate next steps may be.
           </p>
@@ -336,7 +336,7 @@ function SalesPage() {
             </CtaButton>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            This is a group webinar, not a private consultation. It does not provide a diagnosis.
+            This is a group workshop, not a private consultation. It does not provide a diagnosis.
           </p>
         </div>
       </Section>
@@ -346,8 +346,8 @@ function SalesPage() {
       {/* What you'll learn */}
       <Section soft id="learn">
         <SectionHeading
-          eyebrow="Inside the webinar"
-          title="What You'll Learn Inside the Webinar"
+          eyebrow="Inside the workshop"
+          title="What You'll Learn Inside the Workshop"
           subtitle="Five clear, evidence-based sections delivered live — with time for questions."
         />
         <div className="grid gap-5 lg:grid-cols-2">
@@ -365,8 +365,8 @@ function SalesPage() {
         </div>
         <div className="mt-10 text-center">
           <CtaButton to="/checkout" className="flex-col gap-0.5">
-            <span>REGISTER FOR THE WEBINAR</span>
-            <span className="text-sm font-medium opacity-90">{WEBINAR_FEE} · Live online</span>
+            <span>REGISTER FOR THE WORKSHOP</span>
+            <span className="text-sm font-medium opacity-90">{WORKSHOP_FEE} · Live online</span>
           </CtaButton>
         </div>
       </Section>
@@ -376,7 +376,7 @@ function SalesPage() {
       {/* Who is it for */}
       <Section id="who">
         <SectionHeading
-          title="Who Is This Webinar For?"
+          title="Who Is This Workshop For?"
           subtitle="Attendees join from across Pakistan — adults, students, parents and professionals learning together."
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -393,7 +393,7 @@ function SalesPage() {
 
       <WaveDivider soft />
 
-      {/* Webinar experience */}
+      {/* Workshop experience */}
       <Section soft id="experience">
         <SectionHeading
           eyebrow="The live experience"
@@ -425,7 +425,7 @@ function SalesPage() {
         <SectionHeading
           eyebrow="Quick self-check"
           title="Tick Everything That Sounds Like You"
-          subtitle="A reflection tool, not a diagnostic test — but a useful thing to bring to the webinar."
+          subtitle="A reflection tool, not a diagnostic test — but a useful thing to bring to the workshop."
         />
         <div className="mx-auto max-w-3xl">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -458,7 +458,7 @@ function SalesPage() {
             <p className="text-base leading-relaxed sm:text-lg">
               {checked.length >= 3
                 ? `You ticked ${checked.length}. When several of these show up together, it is worth understanding them properly.`
-                : "If several of these sound familiar, the webinar will help you understand what may be behind them."}
+                : "If several of these sound familiar, the workshop will help you understand what may be behind them."}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
               This checklist does not provide a diagnosis.
@@ -525,7 +525,7 @@ function SalesPage() {
               clearly and to evidence-based international standards.
             </p>
             <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              In this live webinar he explains what two decades of assessing attention, mood and
+              In this live workshop he explains what two decades of assessing attention, mood and
               neurodevelopmental conditions has taught him, in language anyone can follow.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
@@ -627,7 +627,7 @@ function SalesPage() {
             Start Understanding.
           </h2>
           <p className="mt-5 text-base opacity-90 sm:text-lg">
-            Join the live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan.
+            Join the live ADHD Clarity Workshop with Dr. Mohammad Faheem Khan.
           </p>
           <div className="mt-8">
             <EventDetails tone="dark" />
@@ -635,7 +635,7 @@ function SalesPage() {
           <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <CtaButton to="/checkout" className="w-full flex-col gap-0.5 sm:w-auto">
               <span>RESERVE MY SEAT</span>
-              <span className="text-sm font-medium opacity-90">Live online · {WEBINAR_FEE}</span>
+              <span className="text-sm font-medium opacity-90">Live online · {WORKSHOP_FEE}</span>
             </CtaButton>
             <CtaButton
               href={WHATSAPP_URL}
@@ -646,14 +646,14 @@ function SalesPage() {
             </CtaButton>
           </div>
           <p className="mt-6 inline-flex items-center gap-2 text-sm opacity-80">
-            <CalendarCheck strokeWidth={1.7} className="size-4" /> Limited webinar seats available.
+            <CalendarCheck strokeWidth={1.7} className="size-4" /> Limited workshop seats available.
           </p>
         </div>
       </section>
 
       <footer className="px-5 py-10 text-center text-xs leading-relaxed text-muted-foreground">
         <p className="mx-auto max-w-2xl">
-          The ADHD Clarity Webinar is a live educational session. It is not a diagnostic service and
+          The ADHD Clarity Workshop is a live educational session. It is not a diagnostic service and
           does not replace a formal psychiatric assessment. Attendees who need further support can
           explore appropriate professional assessment options separately.
         </p>

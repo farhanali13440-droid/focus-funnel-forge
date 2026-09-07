@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export const WHATSAPP_URL =
-  "https://wa.me/923001234567?text=Hi%2C%20I%20have%20a%20question%20about%20the%20ADHD%20Clarity%20Webinar";
+  "https://wa.me/923001234567?text=Hi%2C%20I%20have%20a%20question%20about%20the%20ADHD%20Clarity%20Workshop";
 
 export function Section({
   id,
@@ -267,7 +267,7 @@ export function ExitIntentPopup() {
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-lift)]">
         <h3 className="text-2xl font-semibold">Still unsure?</h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Ask us anything about the live ADHD Clarity Webinar — no obligation. Our team replies on
+          Ask us anything about the live ADHD Clarity Workshop — no obligation. Our team replies on
           WhatsApp during clinic hours.
         </p>
         <div className="mt-6 flex flex-col gap-3">
