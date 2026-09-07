@@ -17,10 +17,10 @@ const doctorImg = doctorAsset.url;
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
 import { supabase } from "@/integrations/supabase/client";
 
-/* Editable webinar details — keep in sync with the landing page. */
-const WEBINAR_DATE = "Sunday 13 September 2026";
-const WEBINAR_TIME = "5:30 PM – 6:30 PM PKT";
-const WEBINAR_FEE = "PKR 999";
+/* Editable workshop details — keep in sync with the landing page. */
+const WORKSHOP_DATE = "Sunday 13 September 2026";
+const WORKSHOP_TIME = "5:30 PM – 6:30 PM PKT";
+const WORKSHOP_FEE = "PKR 999";
 
 /**
  * Uploads the payment screenshot to permanent cloud storage. Resolves with the
@@ -40,9 +40,9 @@ async function uploadReceipt(file: File, transactionId: string): Promise<string>
   return path;
 }
 
-const TITLE = "Register – Live ADHD Clarity Webinar | Dr. Faheem Khan";
+const TITLE = "Register – Live ADHD Clarity Workshop | Dr. Faheem Khan";
 const DESCRIPTION =
-  "Reserve your seat for the live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan. Complete your registration and upload your payment screenshot.";
+  "Reserve your seat for the live ADHD Clarity Workshop with Dr. Mohammad Faheem Khan. Complete your registration and upload your payment screenshot.";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -62,11 +62,11 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const includes = [
-  "Live expert-led ADHD webinar",
+  "Live expert-led ADHD workshop",
   "Understanding ADHD symptoms and patterns",
   "Live Q&A during the session",
   "Guidance on appropriate next steps",
-  "Joining link sent before the webinar",
+  "Joining link sent before the workshop",
 ];
 
 const field =
@@ -142,7 +142,7 @@ function CheckoutPage() {
         whatsapp: booking["whatsapp"] ?? null,
         email: booking["email"] ?? null,
         patient_type: booking["attendeeType"] ?? null,
-        mode: "Live online webinar",
+        mode: "Live online workshop",
         preferred_date: null,
         preferred_time: null,
         concern: booking["concern"] || null,
@@ -170,7 +170,7 @@ function CheckoutPage() {
           to="/"
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft strokeWidth={1.7} className="size-4" /> Back to webinar details
+          <ArrowLeft strokeWidth={1.7} className="size-4" /> Back to workshop details
         </Link>
 
         {/* Progress */}
@@ -201,7 +201,7 @@ function CheckoutPage() {
             className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8"
           >
             <h1 className="text-2xl font-semibold sm:text-3xl">
-              Reserve your seat — ADHD Clarity Webinar
+              Reserve your seat — ADHD Clarity Workshop
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               We&apos;ll send your joining link and reminders on WhatsApp.
@@ -243,7 +243,7 @@ function CheckoutPage() {
               </div>
               <div className="sm:col-span-2">
                 <label className={labelCls} htmlFor="concern">
-                  Question for the webinar <span className="font-normal text-muted-foreground">(optional)</span>
+                  Question for the workshop <span className="font-normal text-muted-foreground">(optional)</span>
                 </label>
                 <textarea
                   id="concern"
@@ -282,7 +282,7 @@ function CheckoutPage() {
                   onChange={onFileChange}
                 />
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Required — please attach proof of your {WEBINAR_FEE} webinar fee. Max 8 MB.
+                  Required — please attach proof of your {WORKSHOP_FEE} workshop fee. Max 8 MB.
                 </p>
                 {fileError && (
                   <p role="alert" className="mt-2 text-sm font-medium text-destructive">
@@ -294,8 +294,8 @@ function CheckoutPage() {
 
             <div className="mt-7 rounded-2xl border border-border bg-primary-soft p-5">
               <div className="flex items-center justify-between text-sm">
-                <span>ADHD Clarity Webinar (live online)</span>
-                <span className="font-semibold">{WEBINAR_FEE}</span>
+                <span>ADHD Clarity Workshop (live online)</span>
+                <span className="font-semibold">{WORKSHOP_FEE}</span>
               </div>
               <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                 <span>Registration fee</span>
@@ -304,7 +304,7 @@ function CheckoutPage() {
               <div className="my-4 h-px bg-border" />
               <div className="flex items-center justify-between text-lg font-semibold">
                 <span>Total due today</span>
-                <span>{WEBINAR_FEE}</span>
+                <span>{WORKSHOP_FEE}</span>
               </div>
             </div>
 
@@ -354,13 +354,13 @@ function CheckoutPage() {
 
             <div className="mt-6">
               <Eyebrow>Your registration</Eyebrow>
-              <h2 className="mt-3 text-xl font-semibold">Live ADHD Clarity Webinar</h2>
+              <h2 className="mt-3 text-xl font-semibold">Live ADHD Clarity Workshop</h2>
               <div className="mt-4 space-y-2 text-sm text-muted-foreground">
                 <p className="flex items-center gap-2">
-                  <CalendarDays strokeWidth={1.7} className="size-4 text-primary" /> {WEBINAR_DATE}
+                  <CalendarDays strokeWidth={1.7} className="size-4 text-primary" /> {WORKSHOP_DATE}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Timer strokeWidth={1.7} className="size-4 text-primary" /> {WEBINAR_TIME}
+                  <Timer strokeWidth={1.7} className="size-4 text-primary" /> {WORKSHOP_TIME}
                 </p>
                 <p className="flex items-center gap-2">
                   <Video strokeWidth={1.7} className="size-4 text-primary" /> Live online
@@ -376,11 +376,11 @@ function CheckoutPage() {
               </ul>
               <div className="mt-6 rounded-2xl bg-primary-soft p-5 text-center">
                 <p className="text-xs font-semibold tracking-[0.14em] text-primary-deep uppercase">
-                  Webinar fee
+                  Workshop fee
                 </p>
-                <p className="mt-1 text-3xl font-semibold">{WEBINAR_FEE}</p>
+                <p className="mt-1 text-3xl font-semibold">{WORKSHOP_FEE}</p>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  This is a group educational webinar, not a private consultation, and does not
+                  This is a group educational workshop, not a private consultation, and does not
                   provide a diagnosis.
                 </p>
               </div>
