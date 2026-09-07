@@ -3,6 +3,9 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import {
   BarChart3,
   CalendarClock,
+  Download,
+  Eye,
+  FileText,
   LayoutDashboard,
   LogOut,
   Plus,
@@ -39,7 +42,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPortal,
 });
 
-type Tab = "dashboard" | "leads" | "followups" | "analytics" | "settings";
+type Tab = "dashboard" | "leads" | "followups" | "proofs" | "analytics" | "settings";
 
 function AdminPortal() {
   const [checking, setChecking] = useState(true);
@@ -144,6 +147,7 @@ const NAV: { key: Tab; label: string; icon: typeof Users }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "leads", label: "Leads", icon: Users },
   { key: "followups", label: "Follow-Ups", icon: CalendarClock },
+  { key: "proofs", label: "Payment Proofs", icon: FileText },
   { key: "analytics", label: "Analytics", icon: BarChart3 },
   { key: "settings", label: "Settings", icon: Settings },
 ];
@@ -390,6 +394,10 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
           </section>
         )}
 
+        {!loading && tab === "proofs" && (
+          <PaymentProofs payments={payments} leads={leads} onOpenLead={setDetail} />
+        )}
+
         {!loading && tab === "analytics" && (
           <section className="mt-6 space-y-6">
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -477,6 +485,89 @@ function Bars({ title, rows, total }: { title: string; rows: [string, number][];
         ))}
       </div>
     </div>
+  );
+}
+
+function PaymentProofs({
+  payments,
+  leads,
+  onOpenLead,
+}: {
+  payments: LeadPayment[];
+  leads: Lead[];
+  onOpenLead: (lead: Lead) => void;
+}) {
+  const withFiles = payments
+    .filter((p) => p.file_path)
+    .sort((a, b) => (a.uploaded_at < b.uploaded_at ? 1 : -1));
+  const leadName = (id: string) => leads.find((l) => l.id === id)?.full_name ?? "Unknown lead";
+
+  const openFile = async (p: LeadPayment, download = false) => {
+    if (!p.file_path) return;
+    const { data } = await supabase.storage
+      .from("payment-proofs")
+      .createSignedUrl(p.file_path, 300, download ? { download: p.file_name ?? true } : undefined);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  return (
+    <section className="mt-6 space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[
+          { label: "Total payment proofs", value: String(withFiles.length) },
+          { label: "Leads with proofs", value: String(new Set(withFiles.map((p) => p.lead_id)).size) },
+          { label: "Awaiting verification", value: String(withFiles.filter((p) => p.status === "Pending Verification").length) },
+        ].map((c) => (
+          <div key={c.label} className="rounded-2xl border border-border bg-card px-4 py-3">
+            <p className="text-xs text-muted-foreground">{c.label}</p>
+            <p className="mt-1 text-2xl font-semibold">{c.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <h2 className="text-lg font-semibold">Recent uploads</h2>
+        <p className="text-sm text-muted-foreground">
+          Files are stored privately and opened with temporary links that expire after 5 minutes.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {withFiles.length === 0 && <p className="text-sm text-muted-foreground">No payment proofs uploaded yet.</p>}
+          {withFiles.map((p) => {
+            const lead = leads.find((l) => l.id === p.lead_id);
+            return (
+              <div key={p.id} className="rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{leadName(p.lead_id)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {money(Number(p.amount))} · {formatDate(p.payment_date)} · {p.payment_method}
+                    </p>
+                  </div>
+                  <StatusBadge status={p.status} />
+                </div>
+                <p className="mt-2 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+                  <FileText className="size-3.5 shrink-0" strokeWidth={1.8} /> {p.file_name}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">Uploaded {formatDateTime(p.uploaded_at)}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => openFile(p)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-semibold">
+                    <Eye className="size-3.5" strokeWidth={1.8} /> View
+                  </button>
+                  <button type="button" onClick={() => openFile(p, true)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-semibold">
+                    <Download className="size-3.5" strokeWidth={1.8} /> Download
+                  </button>
+                  {lead && (
+                    <button type="button" onClick={() => onOpenLead(lead)} className="rounded-lg border border-border px-2 py-1 text-xs font-semibold">
+                      Open lead
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
