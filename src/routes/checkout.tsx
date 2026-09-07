@@ -255,10 +255,41 @@ function CheckoutPage() {
                 />
               </div>
 
+              <div className="sm:col-span-2 rounded-2xl border border-border bg-primary-soft p-5">
+                <Eyebrow>How to pay {WORKSHOP_FEE}</Eyebrow>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Transfer the workshop fee to the account below, then upload your payment
+                  screenshot to confirm your seat.
+                </p>
+                <dl className="mt-4 space-y-2.5 text-sm">
+                  <div className="flex flex-wrap justify-between gap-2">
+                    <dt className="text-muted-foreground">Account title</dt>
+                    <dd className="font-semibold">Spring North Hospital</dd>
+                  </div>
+                  <div className="flex flex-wrap justify-between gap-2">
+                    <dt className="text-muted-foreground">Bank</dt>
+                    <dd className="text-right font-semibold">
+                      Askari Bank Limited — Bahria Town Phase 7, Rawalpindi
+                    </dd>
+                  </div>
+                  <div className="flex flex-wrap justify-between gap-2">
+                    <dt className="text-muted-foreground">Account number</dt>
+                    <dd className="font-semibold tabular-nums">07350200031110</dd>
+                  </div>
+                  <div className="flex flex-wrap justify-between gap-2">
+                    <dt className="text-muted-foreground">IBAN</dt>
+                    <dd className="font-semibold tabular-nums break-all">
+                      PK21ASCM0007350200031110
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
               <div className="sm:col-span-2">
                 <label className={labelCls} htmlFor="receipt">
                   Upload Payment Screenshot <span className="text-cta">*</span>
                 </label>
+
                 <label
                   htmlFor="receipt"
                   className={`flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed px-4 py-4 transition-colors ${
