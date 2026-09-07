@@ -32,8 +32,8 @@ const DESCRIPTION =
   "Your seat for the live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan is reserved. Here are your webinar details and what happens next.";
 
 /* Editable webinar details — keep in sync with the landing page. */
-const WEBINAR_DATE = "[WEBINAR DATE]";
-const WEBINAR_TIME = "[WEBINAR TIME]";
+const WEBINAR_DATE = "Sunday 13 September 2026";
+const WEBINAR_TIME = "5:30 PM – 6:30 PM PKT";
 
 /**
  * Gate: /thank-you is ONLY reachable after a successful checkout submission.

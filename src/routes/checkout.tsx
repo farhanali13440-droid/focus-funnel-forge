@@ -18,8 +18,8 @@ import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives
 import { supabase } from "@/integrations/supabase/client";
 
 /* Editable webinar details — keep in sync with the landing page. */
-const WEBINAR_DATE = "[WEBINAR DATE]";
-const WEBINAR_TIME = "[WEBINAR TIME]";
+const WEBINAR_DATE = "Sunday 13 September 2026";
+const WEBINAR_TIME = "5:30 PM – 6:30 PM PKT";
 const WEBINAR_FEE = "PKR 999";
 
 /**
@@ -204,7 +204,7 @@ function CheckoutPage() {
               Reserve your seat — ADHD Clarity Webinar
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Takes about 60 seconds. We&apos;ll send your joining link and reminders on WhatsApp.
+              We&apos;ll send your joining link and reminders on WhatsApp.
             </p>
 
             <div className="mt-7 grid gap-5 sm:grid-cols-2">

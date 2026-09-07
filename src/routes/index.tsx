@@ -55,8 +55,8 @@ import {
 /* ------------------------------------------------------------------
  * EDITABLE WEBINAR DETAILS — update these three values only.
  * ------------------------------------------------------------------ */
-export const WEBINAR_DATE = "[WEBINAR DATE]";
-export const WEBINAR_TIME = "[WEBINAR TIME]";
+export const WEBINAR_DATE = "Sunday 13 September 2026";
+export const WEBINAR_TIME = "5:30 PM – 6:30 PM PKT";
 export const WEBINAR_FEE = "PKR 999";
 /* ------------------------------------------------------------------ */
 
