@@ -16,6 +16,8 @@ const doctorImg = doctorAsset.url;
 
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
 import { supabase } from "@/integrations/supabase/client";
+import { captureAttribution } from "@/lib/crm";
+
 
 /* Editable workshop details — keep in sync with the landing page. */
 const WORKSHOP_DATE = "Sunday 13 September 2026";
