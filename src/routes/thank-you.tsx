@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   ClipboardList,
   Compass,
-  MapPin,
   MessageCircle,
   Pill,
   Sparkles,
@@ -28,9 +27,13 @@ import { trackPurchase } from "@/lib/meta-pixel";
 /** Fixed offer price — must match the price shown at checkout. */
 const SESSION_PRICE = 999;
 
-const TITLE = "You're Booked – ADHD Clarity Session | Dr. Faheem Khan";
+const TITLE = "You're Registered – ADHD Clarity Webinar | Dr. Faheem Khan";
 const DESCRIPTION =
-  "Your ADHD Clarity Session with Dr. Mohammad Faheem Khan is confirmed. Here are your session details, next steps and support options.";
+  "Your seat for the live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan is reserved. Here are your webinar details and what happens next.";
+
+/* Editable webinar details — keep in sync with the landing page. */
+const WEBINAR_DATE = "[WEBINAR DATE]";
+const WEBINAR_TIME = "[WEBINAR TIME]";
 
 /**
  * Gate: /thank-you is ONLY reachable after a successful checkout submission.
@@ -75,15 +78,15 @@ export const Route = createFileRoute("/thank-you")({
 type Booking = Record<string, string>;
 
 const nextSteps = [
-  { title: "Save our WhatsApp number", body: "So your confirmation and reminders don't get missed." },
-  { title: "Complete the intake form", body: "We'll send a short form — it makes your hour far more useful." },
-  { title: "Join your session on time", body: "Find a quiet, private space with a stable connection." },
-  { title: "Receive your written summary", body: "Sent after the session with your initial plan." },
-  { title: "Discuss what's next", body: "Whether a comprehensive ADHD assessment is appropriate for you." },
+  { title: "Save our WhatsApp number", body: "So your joining link and reminders don't get missed." },
+  { title: "Watch for your joining link", body: "Sent to the contact details you provided before the webinar." },
+  { title: "Join on time", body: "Find a quiet spot with a stable connection and headphones if possible." },
+  { title: "Bring your questions", body: "There is time to ask relevant questions during the live session." },
+  { title: "Consider your next steps", body: "If further support feels appropriate, you can explore professional assessment afterwards." },
 ];
 
 const upsells = [
-  { icon: Brain, title: "Comprehensive ADHD Diagnostic Assessment", body: "The full diagnostic pathway — your PKR 999 is credited within 30 days." },
+  { icon: Brain, title: "Comprehensive ADHD Diagnostic Assessment", body: "The full diagnostic pathway, if you and a clinician agree it is appropriate." },
   { icon: Pill, title: "Medication Management", body: "Careful, monitored treatment where clinically appropriate." },
   { icon: ClipboardList, title: "CBT", body: "Structured therapy for focus, anxiety and self-esteem." },
   { icon: Compass, title: "ADHD Coaching", body: "Practical systems for work, study and daily routines." },
@@ -133,24 +136,22 @@ function ThankYouPage() {
 
   const summary = [
     { label: "Name", value: booking?.["fullName"] || "—" },
-    { label: "Session", value: "ADHD Clarity Session (60 min)" },
-    { label: "Mode", value: booking?.["mode"] || "To be confirmed" },
-    { label: "Date", value: booking?.["date"] || "To be confirmed" },
-    { label: "Time", value: booking?.["time"] || "To be confirmed" },
+    { label: "Event", value: "Live ADHD Clarity Webinar" },
+    { label: "Format", value: "Live online" },
+    { label: "Date", value: WEBINAR_DATE },
+    { label: "Time", value: WEBINAR_TIME },
     { label: "Paid", value: "PKR 999" },
   ];
 
   const downloadIcs = () => {
-    const date = (booking?.["date"] || "").replace(/-/g, "");
-    const time = (booking?.["time"] || "10:00").replace(":", "") + "00";
-    const start = date ? `${date}T${time}` : "";
+    const start = "";
     const ics = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
       "BEGIN:VEVENT",
-      "SUMMARY:ADHD Clarity Session with Dr. Mohammad Faheem Khan",
+      "SUMMARY:Live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan",
       start ? `DTSTART:${start}` : "",
-      "DESCRIPTION:60-minute ADHD Clarity Session. Please join 5 minutes early.",
+      "DESCRIPTION:Live online ADHD Clarity Webinar. Please join 5 minutes early.",
       "END:VEVENT",
       "END:VCALENDAR",
     ]
@@ -159,7 +160,7 @@ function ThankYouPage() {
     const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = "adhd-clarity-session.ics";
+    a.download = "adhd-clarity-webinar.ics";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -171,10 +172,10 @@ function ThankYouPage() {
           <span className="mx-auto grid size-16 place-items-center rounded-full bg-primary-soft text-primary ring-1 ring-border">
             <CheckCircle2 strokeWidth={1.6} className="size-8" />
           </span>
-          <h1 className="mt-6 text-4xl font-semibold sm:text-5xl">Payment Submitted Successfully</h1>
+          <h1 className="mt-6 text-4xl font-semibold sm:text-5xl">You&apos;re Registered!</h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Thank you. Your payment proof has been received successfully. Our team will review your
-            submission and contact you on WhatsApp with the next steps.
+            Your seat for the ADHD Clarity Webinar has been reserved. You&apos;ll receive the webinar
+            access details and reminders on the contact information you provided.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -194,7 +195,7 @@ function ThankYouPage() {
       <Section className="pt-4">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-soft)]">
-            <Eyebrow>Booking summary</Eyebrow>
+            <Eyebrow>Registration summary</Eyebrow>
             <dl className="mt-5 grid gap-4 sm:grid-cols-2">
               {summary.map((s) => (
                 <div key={s.label} className="rounded-2xl bg-primary-soft px-5 py-4">
@@ -209,20 +210,20 @@ function ThankYouPage() {
             <div className="mt-7 grid gap-5 sm:grid-cols-2">
               <div>
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
-                  <Video strokeWidth={1.7} className="size-4 text-primary" /> Online sessions
+                  <Video strokeWidth={1.7} className="size-4 text-primary" /> Joining the webinar
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  A secure video link is sent 30 minutes before your appointment. Join from a quiet,
-                  private space with headphones if possible.
+                  A secure joining link is sent before the session. Join from a quiet space with
+                  headphones if possible.
                 </p>
               </div>
               <div>
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
-                  <MapPin strokeWidth={1.7} className="size-4 text-primary" /> Visiting the clinic
+                  <Users strokeWidth={1.7} className="size-4 text-primary" /> A group session
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Please arrive 10 minutes early. Directions and parking details are included in
-                  your WhatsApp confirmation.
+                  You&apos;ll be learning live alongside other attendees. There is time to ask
+                  relevant questions during the session.
                 </p>
               </div>
             </div>
@@ -250,8 +251,8 @@ function ThankYouPage() {
             <div className="mt-5 rounded-2xl bg-primary-soft p-5 text-sm leading-relaxed">
               <Sparkles strokeWidth={1.7} className="size-4 text-primary" />
               <p className="mt-2">
-                Your PKR 999 is credited toward a Comprehensive ADHD Assessment booked within 30
-                days of your session.
+                This webinar is educational. It does not provide a diagnosis or replace a formal
+                psychiatric assessment.
               </p>
             </div>
           </aside>
@@ -259,7 +260,7 @@ function ThankYouPage() {
       </Section>
 
       <Section soft className="rounded-[2.5rem]">
-        <SectionHeading eyebrow="Next steps" title="Five things to do before your session" />
+        <SectionHeading eyebrow="Next steps" title="Five things to do before the webinar" />
         <div className="mx-auto max-w-3xl">
           <ol className="relative border-l border-border pl-8">
             {nextSteps.map((s, i) => (
@@ -278,8 +279,8 @@ function ThankYouPage() {
       <Section>
         <SectionHeading
           eyebrow="Optional next steps"
-          title="After your session, you may be eligible for"
-          subtitle="Entirely optional. Nothing is decided until you and Dr. Faheem discuss it together."
+          title="After the webinar, you may wish to explore"
+          subtitle="Entirely optional. Nothing is decided until you discuss it with a qualified professional."
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {upsells.map((u) => (
@@ -299,7 +300,7 @@ function ThankYouPage() {
           </a>{" "}
           or{" "}
           <Link to="/" className="font-semibold text-primary-deep underline-offset-4 hover:underline">
-            revisit the session details
+            revisit the webinar details
           </Link>
           .
         </p>

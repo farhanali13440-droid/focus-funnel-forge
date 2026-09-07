@@ -2,12 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowLeft,
+  CalendarDays,
   CheckCircle2,
-  Clock,
   CreditCard,
   ImageUp,
   Lock,
   ShieldCheck,
+  Timer,
   Video,
 } from "lucide-react";
 import doctorAsset from "@/assets/dr-faheem-khan.png.asset.json";
@@ -16,6 +17,10 @@ const doctorImg = doctorAsset.url;
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
 import { supabase } from "@/integrations/supabase/client";
 
+/* Editable webinar details — keep in sync with the landing page. */
+const WEBINAR_DATE = "[WEBINAR DATE]";
+const WEBINAR_TIME = "[WEBINAR TIME]";
+const WEBINAR_FEE = "PKR 999";
 
 /**
  * Uploads the payment screenshot to permanent cloud storage. Resolves with the
@@ -35,11 +40,9 @@ async function uploadReceipt(file: File, transactionId: string): Promise<string>
   return path;
 }
 
-
-
-const TITLE = "Checkout – ADHD Clarity Session (PKR 999) | Dr. Faheem Khan";
+const TITLE = "Register – Live ADHD Clarity Webinar | Dr. Faheem Khan";
 const DESCRIPTION =
-  "Confirm your 60-minute ADHD Clarity Session with Dr. Mohammad Faheem Khan for PKR 999. Choose online or in-clinic, pick your time, and book securely.";
+  "Reserve your seat for the live ADHD Clarity Webinar with Dr. Mohammad Faheem Khan. Complete your registration and upload your payment screenshot.";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -59,11 +62,11 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const includes = [
-  "60-minute consultant session",
-  "Detailed psychiatric assessment",
-  "ADHD screening & functional review",
-  "Initial management plan",
-  "Written summary & next steps",
+  "Live expert-led ADHD webinar",
+  "Understanding ADHD symptoms and patterns",
+  "Live Q&A during the session",
+  "Guidance on appropriate next steps",
+  "Joining link sent before the webinar",
 ];
 
 const field =
@@ -116,14 +119,14 @@ function CheckoutPage() {
     const data = new FormData(e.currentTarget);
     setSubmitting(true);
     try {
-      // Unique transaction ID for this submission — also dedupes the Meta Pixel
+      // Unique transaction ID for this registration — also dedupes the Meta Pixel
       // Purchase event on the Thank You page.
       const transactionId = crypto.randomUUID();
 
       // Step 1 — upload the screenshot. Must succeed before anything else.
       const receiptPath = await uploadReceipt(receipt, transactionId);
 
-      // Step 2 — save the booking permanently. Only a successful save redirects.
+      // Step 2 — save the registration permanently. Only a successful save redirects.
       const booking = {
         ...Object.fromEntries(data.entries()),
         receiptName: receipt.name,
@@ -138,29 +141,27 @@ function CheckoutPage() {
         phone: booking["phone"] ?? "",
         whatsapp: booking["whatsapp"] ?? null,
         email: booking["email"] ?? null,
-        patient_type: booking["patientType"] ?? null,
-        mode: booking["mode"] ?? null,
-        preferred_date: booking["date"] || null,
-        preferred_time: booking["time"] || null,
+        patient_type: booking["attendeeType"] ?? null,
+        mode: "Live online webinar",
+        preferred_date: null,
+        preferred_time: null,
         concern: booking["concern"] || null,
         receipt_path: receiptPath,
       });
-      if (insertError) throw new Error("Submission failed. Please try again.");
+      if (insertError) throw new Error("Registration failed. Please try again.");
 
       sessionStorage.setItem("adhd-booking", JSON.stringify(booking));
       sessionStorage.setItem("adhd-transaction-id", transactionId);
 
       // Step 3 — success: go to the Thank You page (where Purchase fires).
       navigate({ to: "/thank-you" });
-
     } catch (err) {
       setSubmitting(false);
       setSubmitError(
-        err instanceof Error ? err.message : "Submission failed. Please try again.",
+        err instanceof Error ? err.message : "Registration failed. Please try again.",
       );
     }
   };
-
 
   return (
     <main className="min-h-screen surface-soft pb-16">
@@ -169,17 +170,15 @@ function CheckoutPage() {
           to="/"
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft strokeWidth={1.7} className="size-4" /> Back to details
+          <ArrowLeft strokeWidth={1.7} className="size-4" /> Back to webinar details
         </Link>
 
         {/* Progress */}
         <div className="mt-6 flex items-center gap-3">
-          {["Your details", "Booking", "Confirmed"].map((s, i) => (
+          {["Your details", "Registration", "Confirmed"].map((s, i) => (
             <div key={s} className="flex min-w-0 flex-1 items-center gap-3">
               <div className="min-w-0 flex-1">
-                <div
-                  className={`h-1.5 rounded-full ${i <= 1 ? "bg-primary" : "bg-border"}`}
-                />
+                <div className={`h-1.5 rounded-full ${i <= 1 ? "bg-primary" : "bg-border"}`} />
                 <p
                   className={`mt-2 truncate text-xs font-semibold ${
                     i <= 1 ? "text-primary-deep" : "text-muted-foreground"
@@ -201,9 +200,11 @@ function CheckoutPage() {
             onSubmit={onSubmit}
             className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8"
           >
-            <h1 className="text-2xl font-semibold sm:text-3xl">Book your ADHD Clarity Session</h1>
+            <h1 className="text-2xl font-semibold sm:text-3xl">
+              Reserve your seat — ADHD Clarity Webinar
+            </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Takes about 90 seconds. We&apos;ll confirm your slot on WhatsApp.
+              Takes about 60 seconds. We&apos;ll send your joining link and reminders on WhatsApp.
             </p>
 
             <div className="mt-7 grid gap-5 sm:grid-cols-2">
@@ -231,39 +232,26 @@ function CheckoutPage() {
                 <label className={labelCls} htmlFor="email">Email</label>
                 <input id="email" name="email" type="email" required maxLength={255} className={field} placeholder="you@email.com" />
               </div>
-              <div>
-                <label className={labelCls} htmlFor="patientType">Patient type</label>
-                <select id="patientType" name="patientType" required defaultValue="Adult" className={field}>
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="attendeeType">I am attending as</label>
+                <select id="attendeeType" name="attendeeType" required defaultValue="Adult" className={field}>
                   <option>Adult</option>
-                  <option>Child</option>
                   <option>Student</option>
+                  <option>Parent</option>
                   <option>Professional</option>
                 </select>
               </div>
-              <div>
-                <label className={labelCls} htmlFor="mode">Preferred session</label>
-                <select id="mode" name="mode" required defaultValue="Online" className={field}>
-                  <option>Online</option>
-                  <option>Clinic</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="date">Preferred date</label>
-                <input id="date" name="date" type="date" required className={field} />
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="time">Preferred time</label>
-                <input id="time" name="time" type="time" required className={field} />
-              </div>
               <div className="sm:col-span-2">
-                <label className={labelCls} htmlFor="concern">Primary concern</label>
+                <label className={labelCls} htmlFor="concern">
+                  Question for the webinar <span className="font-normal text-muted-foreground">(optional)</span>
+                </label>
                 <textarea
                   id="concern"
                   name="concern"
                   rows={4}
                   maxLength={1000}
                   className={field}
-                  placeholder="In your own words — what's been hardest lately?"
+                  placeholder="Anything you'd like Dr. Faheem to cover during the live session?"
                 />
               </div>
 
@@ -294,7 +282,7 @@ function CheckoutPage() {
                   onChange={onFileChange}
                 />
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Required — please attach proof of your PKR 999 payment. Max 8 MB.
+                  Required — please attach proof of your {WEBINAR_FEE} webinar fee. Max 8 MB.
                 </p>
                 {fileError && (
                   <p role="alert" className="mt-2 text-sm font-medium text-destructive">
@@ -304,20 +292,19 @@ function CheckoutPage() {
               </div>
             </div>
 
-
             <div className="mt-7 rounded-2xl border border-border bg-primary-soft p-5">
               <div className="flex items-center justify-between text-sm">
-                <span>ADHD Clarity Session (60 min)</span>
-                <span className="font-semibold">PKR 999</span>
+                <span>ADHD Clarity Webinar (live online)</span>
+                <span className="font-semibold">{WEBINAR_FEE}</span>
               </div>
               <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
-                <span>Booking fee</span>
+                <span>Registration fee</span>
                 <span>PKR 0</span>
               </div>
               <div className="my-4 h-px bg-border" />
               <div className="flex items-center justify-between text-lg font-semibold">
                 <span>Total due today</span>
-                <span>PKR 999</span>
+                <span>{WEBINAR_FEE}</span>
               </div>
             </div>
 
@@ -332,9 +319,8 @@ function CheckoutPage() {
               disabled={submitting}
               className="mt-6 w-full rounded-2xl bg-cta px-7 py-4 text-base font-semibold text-cta-foreground shadow-[var(--shadow-cta)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 disabled:opacity-70"
             >
-              {submitting ? "Uploading & confirming…" : "Complete Booking"}
+              {submitting ? "Uploading & confirming…" : "RESERVE MY SEAT"}
             </button>
-
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
@@ -344,7 +330,7 @@ function CheckoutPage() {
                 <CreditCard strokeWidth={1.7} className="size-4" /> Card, bank &amp; wallet
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <ShieldCheck strokeWidth={1.7} className="size-4" /> Confidential medical record
+                <ShieldCheck strokeWidth={1.7} className="size-4" /> Your details stay confidential
               </span>
             </div>
           </form>
@@ -367,14 +353,17 @@ function CheckoutPage() {
             </div>
 
             <div className="mt-6">
-              <Eyebrow>Your order</Eyebrow>
-              <h2 className="mt-3 text-xl font-semibold">ADHD Clarity Session</h2>
+              <Eyebrow>Your registration</Eyebrow>
+              <h2 className="mt-3 text-xl font-semibold">Live ADHD Clarity Webinar</h2>
               <div className="mt-4 space-y-2 text-sm text-muted-foreground">
                 <p className="flex items-center gap-2">
-                  <Clock strokeWidth={1.7} className="size-4 text-primary" /> 60 minutes
+                  <CalendarDays strokeWidth={1.7} className="size-4 text-primary" /> {WEBINAR_DATE}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Video strokeWidth={1.7} className="size-4 text-primary" /> Online or in-clinic
+                  <Timer strokeWidth={1.7} className="size-4 text-primary" /> {WEBINAR_TIME}
+                </p>
+                <p className="flex items-center gap-2">
+                  <Video strokeWidth={1.7} className="size-4 text-primary" /> Live online
                 </p>
               </div>
               <ul className="mt-5 space-y-2.5">
@@ -387,16 +376,14 @@ function CheckoutPage() {
               </ul>
               <div className="mt-6 rounded-2xl bg-primary-soft p-5 text-center">
                 <p className="text-xs font-semibold tracking-[0.14em] text-primary-deep uppercase">
-                  Introductory price
+                  Webinar fee
                 </p>
-                <p className="mt-1 text-3xl font-semibold">PKR 999</p>
+                <p className="mt-1 text-3xl font-semibold">{WEBINAR_FEE}</p>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  Deducted from your Comprehensive ADHD Assessment if booked within 30 days.
+                  This is a group educational webinar, not a private consultation, and does not
+                  provide a diagnosis.
                 </p>
               </div>
-              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                Reschedule free of charge up to 24 hours before your appointment.
-              </p>
               <div className="mt-5">
                 <CtaButton href={WHATSAPP_URL} variant="outline" className="w-full py-3 text-sm">
                   Need help? WhatsApp us
