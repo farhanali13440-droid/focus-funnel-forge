@@ -43,6 +43,15 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Tab = "dashboard" | "leads" | "followups" | "proofs" | "analytics" | "settings";
+type BookingProof = {
+  full_name: string;
+  phone: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  receipt_path: string | null;
+  transaction_id: string;
+  created_at: string;
+};
 
 function AdminPortal() {
   const [checking, setChecking] = useState(true);
@@ -125,6 +134,7 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
   const [tab, setTab] = useState<Tab>("dashboard");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [payments, setPayments] = useState<LeadPayment[]>([]);
+  const [bookingProofs, setBookingProofs] = useState<BookingProof[]>([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<Lead | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -138,12 +148,14 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [l, p] = await Promise.all([
+    const [l, p, b] = await Promise.all([
       supabase.from("leads").select("*").order("created_at", { ascending: false }),
       supabase.from("lead_payments").select("*"),
+      supabase.from("bookings").select("full_name, phone, whatsapp, email, receipt_path, transaction_id, created_at").order("created_at", { ascending: false }),
     ]);
     setLeads(l.data ?? []);
     setPayments(p.data ?? []);
+    setBookingProofs((b.data ?? []) as BookingProof[]);
     setLoading(false);
   }, []);
 
@@ -164,6 +176,22 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
     out.sort((a, b) => sort === "oldest" ? t(a.created_at) - t(b.created_at) : sort === "updated" ? t(b.updated_at) - t(a.updated_at) : sort === "followup" ? (t(a.follow_up_date) || Infinity) - (t(b.follow_up_date) || Infinity) : t(b.created_at) - t(a.created_at));
     return out;
   }, [leads, query, fStatus, fSource, fCity, fCampaign, sort]);
+
+  const proofForLead = useCallback((lead: Lead): BookingProof | null => {
+    const normalizePhone = (value: string | null | undefined) => (value ?? "").replace(/\D/g, "");
+    const normalizeEmail = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
+    const email = normalizeEmail(lead.email);
+    const phone = normalizePhone(lead.phone);
+    const whatsapp = normalizePhone(lead.whatsapp);
+    const name = (lead.full_name ?? "").trim().toLowerCase();
+    return bookingProofs.find((b) => {
+      if (!b.receipt_path) return false;
+      if (email && normalizeEmail(b.email) === email) return true;
+      if (phone && (normalizePhone(b.phone) === phone || normalizePhone(b.whatsapp) === phone)) return true;
+      if (whatsapp && (normalizePhone(b.phone) === whatsapp || normalizePhone(b.whatsapp) === whatsapp)) return true;
+      return Boolean(name && (b.full_name ?? "").trim().toLowerCase() === name);
+    }) ?? null;
+  }, [bookingProofs]);
 
   const cities = useMemo(() => [...new Set(leads.map((l) => l.city).filter(Boolean))] as string[], [leads]);
   const campaigns = useMemo(() => [...new Set(leads.map((l) => l.campaign).filter(Boolean))] as string[], [leads]);
@@ -211,10 +239,10 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
             <select aria-label="Filter by campaign" value={fCampaign} onChange={(e) => setFCampaign(e.target.value)} className={inputCls}><option value="">All campaigns</option>{campaigns.map((c) => <option key={c}>{c}</option>)}</select>
             <select aria-label="Sort leads" value={sort} onChange={(e) => setSort(e.target.value)} className={inputCls}><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="followup">Follow-up date</option><option value="updated">Recently updated</option></select>
           </div>
-          <LeadTable leads={filtered} onOpen={setDetail} onDelete={removeLead} />
+          <LeadTable leads={filtered} onOpen={setDetail} onDelete={removeLead} getProof={proofForLead} />
         </>}
 
-        {!loading && tab === "followups" && <section className="mt-6"><h2 className="text-lg font-semibold">Follow-ups</h2><p className="text-sm text-muted-foreground">{followUps.filter((l) => (l.follow_up_date ?? "") <= today).length} due today or overdue</p><LeadTable leads={followUps} onOpen={setDetail} onDelete={removeLead} /></section>}
+        {!loading && tab === "followups" && <section className="mt-6"><h2 className="text-lg font-semibold">Follow-ups</h2><p className="text-sm text-muted-foreground">{followUps.filter((l) => (l.follow_up_date ?? "") <= today).length} due today or overdue</p><LeadTable leads={followUps} onOpen={setDetail} onDelete={removeLead} getProof={proofForLead} /></section>}
         {!loading && tab === "proofs" && <PaymentProofs />}
         {!loading && tab === "analytics" && <section className="mt-6 space-y-6"><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[{ label: "Leads this week", value: String(leadsThisWeek) },{ label: "Leads this month", value: String(leadsThisMonth) },{ label: "Conversion rate", value: `${conversionRate.toFixed(1)}%` },{ label: "Revenue (verified)", value: money(revenue) }].map((c) => <div key={c.label} className="rounded-2xl border border-border bg-card px-4 py-3"><p className="text-xs text-muted-foreground">{c.label}</p><p className="mt-1 text-xl font-semibold">{c.value}</p></div>)}</div><div className="grid gap-6 lg:grid-cols-2"><Bars title="Leads by source" rows={sourceBreakdown} total={leads.length} /><Bars title="Leads by status" rows={LEAD_STATUSES.map((s) => [s, count(s)] as [string, number]).filter((r) => r[1] > 0)} total={leads.length} /></div></section>}
         {!loading && tab === "settings" && <section className="mt-6 max-w-xl rounded-2xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Settings</h2><dl className="mt-4 space-y-2 text-sm"><div className="flex gap-3"><dt className="w-40 text-muted-foreground">Signed in as</dt><dd className="font-medium">{email}</dd></div><div className="flex gap-3"><dt className="w-40 text-muted-foreground">Role</dt><dd className="font-medium">Owner / Admin</dd></div><div className="flex gap-3"><dt className="w-40 text-muted-foreground">Total leads</dt><dd className="font-medium">{leads.length}</dd></div></dl><button type="button" onClick={signOut} className="mt-5 rounded-xl border border-border px-4 py-2 text-sm font-semibold">Log out</button></section>}
@@ -260,10 +288,16 @@ function PaymentProofs() {
   </section>;
 }
 
-function LeadTable({ leads, onOpen, onDelete }: { leads: Lead[]; onOpen: (lead: Lead) => void; onDelete: (lead: Lead) => void }) {
+function LeadTable({ leads, onOpen, onDelete, getProof }: { leads: Lead[]; onOpen: (lead: Lead) => void; onDelete: (lead: Lead) => void; getProof: (lead: Lead) => BookingProof | null }) {
+  const openProof = async (path: string) => {
+    const { data, error } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 300);
+    if (error) { alert(`Could not open payment proof: ${error.message}`); return; }
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+  };
+
   if (leads.length === 0) return <p className="mt-6 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">No leads match these filters.</p>;
   return <>
-    <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-border bg-card lg:block"><table className="w-full min-w-[900px] text-left text-sm"><thead className="border-b border-border bg-muted/50 text-xs text-muted-foreground uppercase"><tr>{["Name", "Phone", "Email", "Source", "Date added", "Status", "Assigned to", "Actions"].map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead><tbody>{leads.map((l) => <tr key={l.id} className="border-b border-border last:border-0 hover:bg-muted/30"><td className="px-4 py-3 font-semibold"><button type="button" onClick={() => onOpen(l)} className="underline-offset-2 hover:underline">{l.full_name}</button></td><td className="px-4 py-3">{l.phone ? <a href={telHref(l.phone)} className="hover:underline">{l.phone}</a> : "—"}</td><td className="px-4 py-3">{l.email ?? "—"}</td><td className="px-4 py-3">{l.source}</td><td className="px-4 py-3 whitespace-nowrap">{formatDate(l.created_at)}</td><td className="px-4 py-3"><StatusBadge status={l.status} /></td><td className="px-4 py-3">{l.assigned_to ?? "—"}</td><td className="px-4 py-3"><div className="flex items-center gap-2"><button type="button" onClick={() => onOpen(l)} className="rounded-lg border border-border px-2 py-1 text-xs font-semibold">View</button>{(l.whatsapp || l.phone) && <a href={waHref(l.whatsapp || l.phone)} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border px-2 py-1 text-xs font-semibold text-emerald-700">WhatsApp</a>}<button type="button" onClick={() => onDelete(l)} aria-label={`Delete ${l.full_name}`} className="rounded-lg border border-border p-1.5 text-destructive"><Trash2 className="size-3.5" strokeWidth={1.8}/></button></div></td></tr>)}</tbody></table></div>
-    <div className="mt-6 grid gap-3 lg:hidden">{leads.map((l) => <div key={l.id} className="rounded-2xl border border-border bg-card p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><button type="button" onClick={() => onOpen(l)} className="truncate text-base font-semibold underline-offset-2 hover:underline">{l.full_name}</button><p className="text-xs text-muted-foreground">{l.source} · {formatDateTime(l.created_at)}</p></div><StatusBadge status={l.status}/></div><p className="mt-2 text-sm">{l.phone ?? "—"}{l.city ? ` · ${l.city}` : ""}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => onOpen(l)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">View</button>{l.phone && <a href={telHref(l.phone)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">Call</a>}{(l.whatsapp || l.phone) && <a href={waHref(l.whatsapp || l.phone)} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-emerald-700">WhatsApp</a>}<button type="button" onClick={() => onDelete(l)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-destructive">Delete</button></div></div>)}</div>
+    <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-border bg-card lg:block"><table className="w-full min-w-[1050px] text-left text-sm"><thead className="border-b border-border bg-muted/50 text-xs text-muted-foreground uppercase"><tr>{["Name", "Phone", "Email", "Source", "Date added", "Status", "Payment Proof", "Assigned to", "Actions"].map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead><tbody>{leads.map((l) => { const proof = getProof(l); return <tr key={l.id} className="border-b border-border last:border-0 hover:bg-muted/30"><td className="px-4 py-3 font-semibold"><button type="button" onClick={() => onOpen(l)} className="underline-offset-2 hover:underline">{l.full_name}</button></td><td className="px-4 py-3">{l.phone ? <a href={telHref(l.phone)} className="hover:underline">{l.phone}</a> : "—"}</td><td className="px-4 py-3">{l.email ?? "—"}</td><td className="px-4 py-3">{l.source}</td><td className="px-4 py-3 whitespace-nowrap">{formatDate(l.created_at)}</td><td className="px-4 py-3"><StatusBadge status={l.status} /></td><td className="px-4 py-3">{proof?.receipt_path ? <button type="button" onClick={() => void openProof(proof.receipt_path!)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5"><Eye className="size-3.5"/> View Proof</button> : <span className="text-xs text-muted-foreground">Not submitted</span>}</td><td className="px-4 py-3">{l.assigned_to ?? "—"}</td><td className="px-4 py-3"><div className="flex items-center gap-2"><button type="button" onClick={() => onOpen(l)} className="rounded-lg border border-border px-2 py-1 text-xs font-semibold">View</button>{(l.whatsapp || l.phone) && <a href={waHref(l.whatsapp || l.phone)} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border px-2 py-1 text-xs font-semibold text-emerald-700">WhatsApp</a>}<button type="button" onClick={() => onDelete(l)} aria-label={`Delete ${l.full_name}`} className="rounded-lg border border-border p-1.5 text-destructive"><Trash2 className="size-3.5" strokeWidth={1.8}/></button></div></td></tr>})}</tbody></table></div>
+    <div className="mt-6 grid gap-3 lg:hidden">{leads.map((l) => { const proof = getProof(l); return <div key={l.id} className="rounded-2xl border border-border bg-card p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><button type="button" onClick={() => onOpen(l)} className="truncate text-base font-semibold underline-offset-2 hover:underline">{l.full_name}</button><p className="text-xs text-muted-foreground">{l.source} · {formatDateTime(l.created_at)}</p></div><StatusBadge status={l.status}/></div><p className="mt-2 text-sm">{l.phone ?? "—"}{l.city ? ` · ${l.city}` : ""}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => onOpen(l)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">View</button>{proof?.receipt_path ? <button type="button" onClick={() => void openProof(proof.receipt_path!)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-primary"><Eye className="mr-1 inline size-3.5"/>View Proof</button> : <span className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground">No proof</span>}{l.phone && <a href={telHref(l.phone)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">Call</a>}{(l.whatsapp || l.phone) && <a href={waHref(l.whatsapp || l.phone)} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-emerald-700">WhatsApp</a>}<button type="button" onClick={() => onDelete(l)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-destructive">Delete</button></div></div>})}</div>
   </>;
 }
