@@ -5,7 +5,6 @@ import doctorAsset from "@/assets/dr-faheem-khan.png.asset.json";
 const doctorImg = doctorAsset.url;
 import { CtaButton, Eyebrow, WHATSAPP_URL } from "@/components/funnel/primitives";
 import { supabase } from "@/integrations/supabase/client";
-import { captureAttribution } from "@/lib/crm";
 
 const WORKSHOP_DATE = "Sunday 13 September 2026";
 const WORKSHOP_TIME = "5:30 PM – 6:30 PM PKT";
@@ -28,14 +27,14 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
-async function uploadReceipt(file: File, leadId: string, transactionId: string): Promise<string> {
+async function uploadReceipt(file: File, transactionId: string): Promise<string> {
   const buffer = await file.arrayBuffer();
-  if (!buffer.byteLength) throw new Error("Screenshot upload failed — the file appears to be empty.");
+  if (!buffer.byteLength) throw new Error("Payment screenshot is empty.");
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-120) || `receipt.${ext}`;
-  const path = `${leadId}/${transactionId}-${safeName}`;
+  const path = `${transactionId}-${Date.now()}-${safeName}`;
   const { error } = await supabase.storage.from("payment-proofs").upload(path, file, { contentType: file.type, upsert: false });
-  if (error) throw new Error(`Screenshot upload failed: ${error.message}`);
+  if (error) throw new Error(`Payment screenshot upload failed: ${error.message}`);
   return path;
 }
 
@@ -62,7 +61,6 @@ function CheckoutPage() {
     const transactionId = crypto.randomUUID();
     setSubmitting(true);
     let receiptPath: string | null = null;
-    let leadId: string | null = null;
     try {
       const fullName = String(data.get("fullName") ?? "").trim();
       const phone = String(data.get("phone") ?? "").trim();
@@ -71,31 +69,18 @@ function CheckoutPage() {
       const city = String(data.get("city") ?? "").trim();
       const concern = String(data.get("concern") ?? "").trim();
       const attendeeType = String(data.get("attendeeType") ?? "Adult");
-      const attribution = captureAttribution();
-      const source = attribution.utm_source ? "Other" : "Website";
 
-      // Create the lead directly instead of depending on a client-callable RPC. The leads table already permits public INSERT.
-      leadId = crypto.randomUUID();
-      const { error: leadError } = await supabase.from("leads").insert({
-        id: leadId, full_name: fullName, phone, whatsapp: whatsapp || null, email: email || null, city: city || null,
-        service: "ADHD Clarity Workshop", source, campaign: attribution.utm_campaign || null,
-        utm_source: attribution.utm_source || null, utm_medium: attribution.utm_medium || null,
-        utm_campaign: attribution.utm_campaign || null, utm_content: attribution.utm_content || null,
-        utm_term: attribution.utm_term || null, landing_page: attribution.landing_page || null,
-        referrer: attribution.referrer || null, status: "New", notes: concern || null,
-      });
-      if (leadError) throw new Error(`We could not save your registration: ${leadError.message}`);
+      // Save the screenshot directly into the existing Payment Proofs folder.
+      receiptPath = await uploadReceipt(receipt, transactionId);
 
-      // Upload proof only after the lead exists so the file path can be tied to that lead.
-      receiptPath = await uploadReceipt(receipt, leadId, transactionId);
-
+      // Keep the existing registration/booking schema unchanged.
       const booking = { ...Object.fromEntries(data.entries()), receiptName: receipt.name } as Record<string, string>;
       delete booking["receipt"];
       const { error: insertError } = await supabase.from("bookings").insert({
-        transaction_id: transactionId, lead_id: leadId, full_name: fullName,
+        transaction_id: transactionId, full_name: fullName,
         age: booking["age"] ? Number(booking["age"]) : null, city: city || null, phone, whatsapp: whatsapp || null,
         email: email || null, patient_type: attendeeType, mode: "Live online workshop", preferred_date: null,
-        preferred_time: null, concern: concern || null, receipt_path: receiptPath, receipt_name: receipt.name,
+        preferred_time: null, concern: concern || null, receipt_path: receiptPath,
         amount: WORKSHOP_AMOUNT, currency: "PKR",
       });
       if (insertError) {
