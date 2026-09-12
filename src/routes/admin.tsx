@@ -260,32 +260,23 @@ function Bars({ title, rows, total }: { title: string; rows: [string, number][];
   return <div className="rounded-2xl border border-border bg-card p-5"><h3 className="text-sm font-semibold">{title}</h3><div className="mt-4 space-y-3">{rows.length === 0 && <p className="text-sm text-muted-foreground">No data yet.</p>}{rows.map(([label, value]) => <div key={label}><div className="flex justify-between text-xs"><span className="font-medium">{label}</span><span className="text-muted-foreground">{value}</span></div><div className="mt-1 h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary" style={{ width: `${total ? Math.max(4, (value / total) * 100) : 0}%` }} /></div></div>)}</div></div>;
 }
 
-function PaymentProofs() {
-  const [files, setFiles] = useState<{ name: string; id: string | null; created_at?: string | null; updated_at?: string | null }[]>([]);
-  const [loading, setLoading] = useState(true);
+function PaymentProofs({ bookings, loadError }: { bookings: BookingProof[]; loadError: string | null }) {
   const [error, setError] = useState<string | null>(null);
+  const proofs = bookings.filter((b) => b.receipt_path && b.receipt_path.trim() !== "");
 
-  const loadFiles = useCallback(async () => {
-    setLoading(true); setError(null);
-    const { data, error: listError } = await supabase.storage.from("payment-proofs").list("", { limit: 100, sortBy: { column: "created_at", order: "desc" } });
-    if (listError) setError(listError.message);
-    setFiles((data ?? []).filter((f) => f.name && !f.id?.endsWith("/")));
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { void loadFiles(); }, [loadFiles]);
-
-  const openFile = async (name: string, download = false) => {
-    const { data, error: urlError } = await supabase.storage.from("payment-proofs").createSignedUrl(name, 300, download ? { download: true } : undefined);
+  const openProof = async (path: string) => {
+    const { data, error: urlError } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 300);
     if (urlError) { setError(urlError.message); return; }
     if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
   };
 
   return <section className="mt-6 space-y-4">
     <div className="rounded-2xl border border-border bg-card p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-semibold">Payment Proofs</h2><p className="text-sm text-muted-foreground">Simple folder for uploaded payment screenshots.</p></div><button type="button" onClick={() => void loadFiles()} className="rounded-xl border border-border px-3 py-2 text-sm font-semibold">Refresh</button></div>
-      {error && <p role="alert" className="mt-4 rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
-      {loading ? <p className="mt-6 text-sm text-muted-foreground">Loading payment proofs…</p> : files.length === 0 ? <p className="mt-6 text-sm text-muted-foreground">No payment screenshots uploaded yet.</p> : <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{files.map((file) => <div key={file.id} className="rounded-xl border border-border p-4"><div className="flex items-start gap-3"><FileText className="mt-0.5 size-5 shrink-0 text-primary"/><div className="min-w-0"><p className="truncate text-sm font-semibold">{file.name}</p><p className="mt-1 text-xs text-muted-foreground">{file.created_at ? formatDateTime(file.created_at) : "Uploaded payment proof"}</p></div></div><div className="mt-3 flex gap-2"><button type="button" onClick={() => void openFile(file.name)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold"><Eye className="size-3.5"/> View</button><button type="button" onClick={() => void openFile(file.name, true)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold"><Download className="size-3.5"/> Download</button></div></div>)}</div>}
+      <div><h2 className="text-lg font-semibold">Payment Proofs</h2><p className="text-sm text-muted-foreground">Workshop registrations with an uploaded payment screenshot.</p></div>
+      {(loadError || error) && <p role="alert" className="mt-4 rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{loadError ?? error}</p>}
+      {proofs.length === 0 && !loadError ? <p className="mt-6 text-sm text-muted-foreground">No payment screenshots uploaded yet.</p> : (
+        <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground"><tr>{["Name", "Phone", "Email", "Transaction ID", "Date", "Payment Proof"].map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead><tbody>{proofs.map((b) => <tr key={b.transaction_id} className="border-b border-border last:border-0 hover:bg-muted/30"><td className="px-4 py-3 font-semibold">{b.full_name}</td><td className="px-4 py-3">{b.phone ?? b.whatsapp ?? "—"}</td><td className="px-4 py-3">{b.email ?? "—"}</td><td className="px-4 py-3 font-mono text-xs">{b.transaction_id}</td><td className="px-4 py-3 whitespace-nowrap">{formatDateTime(b.created_at)}</td><td className="px-4 py-3"><button type="button" onClick={() => void openProof(b.receipt_path!)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5"><Eye className="size-3.5"/> View Proof</button></td></tr>)}</tbody></table></div>
+      )}
     </div>
   </section>;
 }
