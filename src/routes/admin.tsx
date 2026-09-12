@@ -259,7 +259,7 @@ function Bars({ title, rows, total }: { title: string; rows: [string, number][];
 }
 
 function PaymentProofs() {
-  const [files, setFiles] = useState<{ name: string; id: string | null; created_at?: string; updated_at?: string }[]>([]);
+  const [files, setFiles] = useState<{ name: string; id: string | null; created_at?: string | null; updated_at?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
