@@ -135,6 +135,7 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
   const [leads, setLeads] = useState<Lead[]>([]);
   const [payments, setPayments] = useState<LeadPayment[]>([]);
   const [bookingProofs, setBookingProofs] = useState<BookingProof[]>([]);
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<Lead | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -156,6 +157,7 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
     setLeads(l.data ?? []);
     setPayments(p.data ?? []);
     setBookingProofs((b.data ?? []) as BookingProof[]);
+    setBookingError(b.error ? b.error.message : null);
     setLoading(false);
   }, []);
 
@@ -243,7 +245,7 @@ function Portal({ email, onSignOut }: { email: string | null; onSignOut: () => v
         </>}
 
         {!loading && tab === "followups" && <section className="mt-6"><h2 className="text-lg font-semibold">Follow-ups</h2><p className="text-sm text-muted-foreground">{followUps.filter((l) => (l.follow_up_date ?? "") <= today).length} due today or overdue</p><LeadTable leads={followUps} onOpen={setDetail} onDelete={removeLead} getProof={proofForLead} /></section>}
-        {!loading && tab === "proofs" && <PaymentProofs />}
+        {!loading && tab === "proofs" && <PaymentProofs bookings={bookingProofs} loadError={bookingError} />}
         {!loading && tab === "analytics" && <section className="mt-6 space-y-6"><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[{ label: "Leads this week", value: String(leadsThisWeek) },{ label: "Leads this month", value: String(leadsThisMonth) },{ label: "Conversion rate", value: `${conversionRate.toFixed(1)}%` },{ label: "Revenue (verified)", value: money(revenue) }].map((c) => <div key={c.label} className="rounded-2xl border border-border bg-card px-4 py-3"><p className="text-xs text-muted-foreground">{c.label}</p><p className="mt-1 text-xl font-semibold">{c.value}</p></div>)}</div><div className="grid gap-6 lg:grid-cols-2"><Bars title="Leads by source" rows={sourceBreakdown} total={leads.length} /><Bars title="Leads by status" rows={LEAD_STATUSES.map((s) => [s, count(s)] as [string, number]).filter((r) => r[1] > 0)} total={leads.length} /></div></section>}
         {!loading && tab === "settings" && <section className="mt-6 max-w-xl rounded-2xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Settings</h2><dl className="mt-4 space-y-2 text-sm"><div className="flex gap-3"><dt className="w-40 text-muted-foreground">Signed in as</dt><dd className="font-medium">{email}</dd></div><div className="flex gap-3"><dt className="w-40 text-muted-foreground">Role</dt><dd className="font-medium">Owner / Admin</dd></div><div className="flex gap-3"><dt className="w-40 text-muted-foreground">Total leads</dt><dd className="font-medium">{leads.length}</dd></div></dl><button type="button" onClick={signOut} className="mt-5 rounded-xl border border-border px-4 py-2 text-sm font-semibold">Log out</button></section>}
       </main>
